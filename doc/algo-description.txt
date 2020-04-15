@@ -1,0 +1,13 @@
+process description
+=====================
+C001-C037.txt  is the whole coverage for C001, C002,...C037
+there exist for sats: 162, 226, 234
+
+step1: split bit-7, so that there are 2 parts of the value range: 
+A: [0..127]
+B: [128..255]
+the klauses kset-A, with bit-7 = 0, are for A, but not B
+the klauses kset-B, with bit-7 = 1, are for B, but not A
+all other klauses kset-S without bit-7 bit set, are in both A and B
+
+
