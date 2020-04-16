@@ -1,23 +1,36 @@
-class TransKlauseEngine:
-    """
-    move base_klause's 3 bits to the left-most positions, and
-    set them to be 0 0 0 -> self.klause. while doing this, set up 
-    operators so that any klause (coming from base_klause's set) 
-    will be trnasfered to a new klause compatible to self.klause
-    """
+class VKlause:
+    def __init__(self, dic, nov):
+        self.dic = dic          # { 7:1, 3: 0, 0: 1}, or {3:0, 1:1} or {3:1}
+        self.nov                # number of variables - bits of value space
+        self.bits = sorted(list(dic.keys()))  # can be of length: 1,2,3
+        self.nob = len(self.bits)             # 1, 2 or 3
+        self.tailsize = self.bits[0]          # gap btwn low bit and 0
 
-    def __init__(self, base_klause, nov):
-        self.start_klause = base_klause
+
+class TransKlauseEngine:
+    """ move base_klause's bits to the left-most positions, and
+        set them to be 0s or 1s (depending on top), assign to self.klause. 
+        while doing this, set up operators so that any klause 
+        will be transfered to a new klause compatible to self.klause
+        """
+
+    def __init__(self,
+                 base_vklause,  # inst of VKlause
+                 nov,           # number of bits in value-space
+                 top=True):     # transfer to top (0s) or bottom (1s)
+        self.start_vklause = base_vklause
         self.nov = nov
         self.setup_tx_operators()
+        self.top = top
 
     def setup_tx_operators(self):
-        bits = sorted(list(self.start_klause.keys()))
-        bits.reverse()
+        bits = self.start_vklause.bits[:]
+        L = len(bits)
         # target/left-most 3 bits(names)
-        hi_bits = [self.nov - 1, self.nov - 2, self.nov - 3]
+        hi_bits = [self.nov - (i + 1) for i in range(L)]
         self.bitname_tx = {}
         self.bitvalue_tx = {}
+        bits.reverse()        # order: higher-bit -> lower-bit
         for b in bits:
             if b in hi_bits:
                 hi_bits.remove(b)
@@ -29,8 +42,9 @@ class TransKlauseEngine:
 
             if self.start_klause[b] == 1:
                 self.bitvalue_tx[hi] = True
-        n = self.nov - 1
-        self.klause = {n: 0, n-1: 0, n-2: 0}
+        self.klause = {}
+        for i in hi_bits:                      # top=True  -> bit-values: 0
+            self.klause[i] = [1, 0][self.top]  # top=False -> bit-values: 1
 
     def trans_klause(self, klause):
         dic = {}

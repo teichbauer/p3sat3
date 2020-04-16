@@ -1,3 +1,6 @@
+0.3.140-20200415
+- redesign/impl of TransKlauseEngine
+- detail algo
 0.3.139-20200415
 - manual data analysis continues
 0.3.138-20200414

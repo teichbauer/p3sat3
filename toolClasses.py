@@ -246,7 +246,7 @@ class Combo2Relation:
 if __name__ == '__main__':
     import sys
     if len(sys.argv) != 2:
-        fname = './test/config1.json'
+        fname = './config1.json'
     else:
         fname = sys.argv[1].strip()
     src = eval(open(fname).read())
