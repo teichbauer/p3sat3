@@ -62,41 +62,7 @@ def fill_2set(src, lst2):  # Complexity: O(m**2)
             lst2.append(kset)
     return fill_2set(src, lst2)
 
-# find out how many SATs / UNSATs values, for a given
-#  test_set, looking like {'C001','C002'} or {'C004','C010','C012'}
 
-
-# def combine(test_set, vdic, output=True):
-#     sats = []
-#     unsats = []
-#     for v in vdic:
-#         if vdic[v]:
-#             if len(vdic[v]) == 0:
-#                 # if no blocker exists (vdic[v] == None) -> SAT
-#                 sats.append(v)
-#             else:
-#                 if vdic[v].isdisjoint(test_set):
-#                     # if test-set and set from vdic[v] are is-joint -> SAT
-#                     sats.append(v)
-#                 else:
-#                     # test-set and set from vdic[v] interset -> UNSAT
-#                     unsats.append(v)
-#         else:
-#             # if no blocker exists (vdic[v] == None) -> SAT
-#             sats.append(v)
-#     if output:
-#         out_to_files(test_set, unsat, sat)
-
-
-# def out_to_files(testSet, unsat, sat):
-#     dirname = str(len(test_set))
-#     fname = '-'.join(test_set) + '.txt'
-#     f = open(f'./combinations/{dirname}/{fname}', 'w')
-#     f.write(fname + '\n')
-#     f.write('no of SATS:' + str(len(sats)) + '\n')
-#     f.write('no of UNSATS:' + str(len(unsats)) + '\n')
-#     f.write('='*80 + '\n')
-#     f.write('SATs: \n' + str(sats))
-#     f.write('-'*80 + '\n')
-#     f.write('UNSATs: \n' + str(unsats))
-#     f.close()
+def get_sdic(filename):
+    sdic = eval(open(filename).read())
+    return sdic

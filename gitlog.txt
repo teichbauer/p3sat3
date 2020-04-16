@@ -1,3 +1,5 @@
+0.3.143-20200416
+- basic frame works now: bitdic, with vkdic: I can browse verify/Org.txt
 0.3.142-20200416
 - reorganize files. New classes: Visualizer, VKlause
 0.3.141-20200415

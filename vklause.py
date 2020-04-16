@@ -7,7 +7,7 @@ class VKlause:
     def __init__(self, kname, dic, nov):
         self.kname = kname
         self.dic = dic          # { 7:1, 3: 0, 0: 1}, or {3:0, 1:1} or {3:1}
-        self.nov                # number of variables - bits of value space
+        self.nov = nov          # number of variables - bits of value space
         self.bits = sorted(list(dic.keys()))  # can be of length: 1,2,3
         self.nob = len(self.bits)             # 1, 2 or 3
         self.tailsize = self.bits[0]          # gap btwn low bit and 0
@@ -26,7 +26,7 @@ class VKlause:
             '''
         filter = 0
         mask = 0
-        for k, v in self.kdic.items():
+        for k, v in self.dic.items():
             filter = filter | (1 << k)
             if v == 1:
                 mask = mask | (1 << k)
