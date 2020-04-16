@@ -1,11 +1,3 @@
-class VKlause:
-    def __init__(self, dic, nov):
-        self.dic = dic          # { 7:1, 3: 0, 0: 1}, or {3:0, 1:1} or {3:1}
-        self.nov                # number of variables - bits of value space
-        self.bits = sorted(list(dic.keys()))  # can be of length: 1,2,3
-        self.nob = len(self.bits)             # 1, 2 or 3
-        self.tailsize = self.bits[0]          # gap btwn low bit and 0
-
 
 class TransKlauseEngine:
     """ move base_klause's bits to the left-most positions, and

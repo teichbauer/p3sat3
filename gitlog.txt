@@ -1,3 +1,5 @@
+0.3.142-20200416
+- reorganize files. New classes: Visualizer, VKlause
 0.3.141-20200415
 - forgot algo-description.txt last checkin.
 0.3.140-20200415
@@ -6,6 +8,7 @@
 0.3.139-20200415
 - manual data analysis continues
 0.3.138-20200414
+- branching off from p3sat to p3sat3.
 - new design: split n-th bit, n-1-th,... till
 0.3.137-20200413
 - conclude the bad news.
@@ -19,7 +22,6 @@
   O(2**n), or at least, difficult to justify for not.
 - I should now first, verify or prove, solver2 is not O(2**n), even thought
   I can not yet get sat-values, just they/it do exist or not.
->>>>>>> c2989f65cf47e06121e01b164e34776c8bdbada5
 0.3.133-20200410
 - fixed bug in klauseproperty. gone thru without error!
   with all 38 klauses, there is no sat - 49 stops.
