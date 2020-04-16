@@ -1,3 +1,5 @@
+0.3.139-20200415
+- manual data analysis continues
 0.3.138-20200414
 - new design: split n-th bit, n-1-th,... till
 0.3.137-20200413
