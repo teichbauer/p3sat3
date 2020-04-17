@@ -16,11 +16,14 @@ def make_vkdic(kdic):
     return vkdic
 
 
-def trans_vkdic(vkd, seed_kn):
-    tx = TransKlauseEngine(vkd[seed_kn], 6, False)
+def trans_vkdic(vkd, seed_kn, top):
+    tx = TransKlauseEngine(vkd[seed_kn], 6, top)
     vkdic = {}
     for kn, vk in vkd.items():
-        vkdic[kn] = VKlause(kn, tx.trans_klause(vk.dic), 6)
+        if kn == seed_kn:
+            vkdic[kn] = VKlause(kn, tx.klause, 6)
+        else:
+            vkdic[kn] = VKlause(kn, tx.trans_klause(vk.dic), 6)
     return vkdic
 
 
@@ -37,8 +40,8 @@ class TransKlauseEngine:
                  top=True):     # transfer to top (0s) or bottom (1s)
         self.start_vklause = base_vklause
         self.nov = nov
-        self.setup_tx_operators()
         self.top = top
+        self.setup_tx_operators()
 
     def setup_tx_operators(self):
         bits = self.start_vklause.bits[:]
@@ -60,7 +63,8 @@ class TransKlauseEngine:
             if self.start_vklause.dic[b] == 1:
                 self.bitvalue_tx[hi] = True
         self.klause = {}
-        for i in hi_bits:                      # top=True  -> bit-values: 0
+        hbits = [self.nov - (i + 1) for i in range(L)]
+        for i in hbits:                      # top=True  -> bit-values: 0
             self.klause[i] = [1, 0][self.top]  # top=False -> bit-values: 1
 
     def trans_klause(self, klause):
@@ -135,18 +139,20 @@ class TransKlauseEngine:
         return newv
 
 
-def test(filename, seed):
+def test(filename, seed, top):
     vkd = make_vkdic(_kdic)
     if seed == 'C001':
         vis = Visualizer(vkd, 6)
         vis.output(filename)
     else:
-        new_vkd = trans_vkdic(vkd, 'C002')
+        new_vkd = trans_vkdic(vkd, 'C002', top)
         vis = Visualizer(new_vkd, 6)
         vis.output(filename)
 
 
 if __name__ == '__main__':
     x = 0
-    test('test-C001.txt', 'C001')
+    top = False
+    test('test-C002.txt', 'C002', top)
+    # test('test-C001.txt', 'C001', top)
     x = 1
