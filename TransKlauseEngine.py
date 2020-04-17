@@ -8,6 +8,14 @@ _kdic = {
     'C003': {5: 0, 4: 0, 2: 1}
 }
 
+test_dic = {
+    'C1': {
+        'C001': {5: 1, 4: 1, 3: 1},
+        'C002': {2: 0, 1: 1, 0: 0},
+        'C003': {5: 0, 4: 0, 2: 1}
+    },
+}
+
 
 def make_vkdic(kdic):
     vkdic = {}
@@ -24,7 +32,7 @@ def trans_vkdic(vkd, seed_kn, top):
             vkdic[kn] = VKlause(kn, tx.klause, 6)
         else:
             vkdic[kn] = VKlause(kn, tx.trans_klause(vk.dic), 6)
-    return vkdic
+    return vkdic, tx
 
 
 class TransKlauseEngine:
@@ -60,7 +68,7 @@ class TransKlauseEngine:
                 self.bitname_tx[b] = hi
                 self.bitname_tx[hi] = b
 
-            if self.start_vklause.dic[b] == 1:
+            if self.start_vklause.dic[b] == int(self.top):
                 self.bitvalue_tx[hi] = True
         self.klause = {}
         hbits = [self.nov - (i + 1) for i in range(L)]
@@ -127,8 +135,8 @@ class TransKlauseEngine:
             bv = (v >> i) % 2
             if i in vxs:
                 bv = int(not bv)
-            if i in tnx:
-                j = nx.pop(i)
+            if i in txn:
+                j = txn.pop(i)
                 vdic[j] = bv
             else:
                 vdic[i] = bv
@@ -141,18 +149,30 @@ class TransKlauseEngine:
 
 def test(filename, seed, top):
     vkd = make_vkdic(_kdic)
+
+    new_vkd, tx = trans_vkdic(vkd, seed, top)
+    vis = Visualizer(new_vkd, 6)
+    vis.output(filename, tx)
+    '''
     if seed == 'C001':
         vis = Visualizer(vkd, 6)
         vis.output(filename)
     else:
-        new_vkd = trans_vkdic(vkd, 'C002', top)
+        new_vkd = trans_vkdic(vkd, seed, top)
         vis = Visualizer(new_vkd, 6)
         vis.output(filename)
+    '''
 
 
 if __name__ == '__main__':
     x = 0
+    # top = True
+    # test('test-C001-top.txt', 'C001', top)
+    # test('test-C002-top.txt', 'C002', top)
+    # test('test-C003-top.txt', 'C003', top)
+
     top = False
-    test('test-C002.txt', 'C002', top)
-    # test('test-C001.txt', 'C001', top)
+    # test('test-C003.txt', 'C003', top)
+    # test('test-C002.txt', 'C002', top)
+    test('test-C001.txt', 'C001', top)
     x = 1

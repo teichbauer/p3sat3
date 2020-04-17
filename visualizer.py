@@ -21,9 +21,13 @@ class Visualizer:
         msg += '-'*60 + '\n'
         return knames, msg
 
-    def output(self, filename):
+    def output(self, filename, tx=None):
         knames, koutput = self.output_vkdic()
         fil = open('./verify/' + filename, 'w')
+        if tx:
+            line = 'txn: ' + str(tx.bitname_tx) + ',  '
+            line += 'txv: ' + str(tx.bitvalue_tx) + '\n'
+            fil.write(line + '-'*60 + '\n')
         fil.write(koutput)
         for v in range(2**self.nov):
             line = str(v).zfill(4) + ': '
