@@ -1,6 +1,7 @@
 from basics import get_sdic
 from vklause import VKlause
 from visualizer import Visualizer
+from TransKlauseEngine import TransKlauseEngine, make_vkdic
 
 
 class BitDic:
@@ -23,7 +24,40 @@ class BitDic:
         for i in range(nov):        # number_of_variables from config
             self.dic[i] = [[], []]
         self.add_clause()
+        self.coversion_path = []
         self.vis = Visualizer(self.vkdic, self.nov)
+
+    def split_topbit(self):
+        tb = self.nov - 1   # top bit number
+        vkdic0_pure = {}    # vks with top-bit == 0
+        vkdic1_pure = {}    # vks with top-bit == 1
+        vkdic_mix = {}      # vks with top-bit not used
+
+        kns = list(self.vkdic.keys())
+
+        for kn in self.dic[tb][0]:
+            vklause = self.vkdic[kn]
+            # drop top bit, nov decrease by 1 (tp)
+            vklause.dic.pop(tb)
+            vkdic0_pure[kn] = VKlause(kn, vklause.dic, tb)
+
+        for kn in self.dic[tb][1]:
+            vklause = self.vkdic[kn]
+            # drop top bit, nov decrease by 1 (tp)
+            vklause.dic.pop(tb)
+            vkdic1_pure[kn] = VKlause(kn, vklause.dic, tb)
+
+        for kn in kns:
+            if kn not in vkdic0_pure and kn not in vkdic1_pure:
+                vklause = self.vkdic[kn]
+                # no need to drop top bit, they don't have it.
+                vkdic_mix[kn] = VKlause(kn, vklause.dic, tb)
+
+        vkdic0_pure.update(vkdic_mix)
+        vkdic1_pure.update(vkdic_mix)
+        bitdic0 = BitDic(self.name + '-0', vkdic0_pure, tb)
+        bitdic1 = BitDic(self.name + '-1', vkdic1_pure, tb)
+        return bitdic0, bitdic1
 
     def add_clause(self, vk=None):
         # add clause c into bit-dict
@@ -50,14 +84,13 @@ class BitDic:
 
 def make_bitdic(conf_filename):
     sdic = get_sdic(conf_filename)
-    vkdic = {}
-    for kn, d in sdic['kdic'].items():
-        vkdic[kn] = VKlause(kn, d, sdic['nov'])
+    vkdic = make_vkdic(sdic['kdic'])
     bitdic = BitDic("Org", vkdic, sdic['nov'])
     return bitdic
 
 
 if __name__ == '__main__':
     bdic = make_bitdic('config1.json')
-    bdic.visualize()
+    bdic0, bdic1 = bdic.split_topbit()
+    # bdic.visualize()
     x = 1

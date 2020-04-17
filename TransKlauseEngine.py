@@ -164,15 +164,23 @@ def test(filename, seed, top):
     '''
 
 
+def test_bitdic(conf_file_name):
+    pass
+
+
 if __name__ == '__main__':
     x = 0
+    # --------------------
+    test_dic()
+    # --------------------
     # top = True
     # test('test-C001-top.txt', 'C001', top)
     # test('test-C002-top.txt', 'C002', top)
     # test('test-C003-top.txt', 'C003', top)
 
-    top = False
+    # top = False
     # test('test-C003.txt', 'C003', top)
     # test('test-C002.txt', 'C002', top)
-    test('test-C001.txt', 'C001', top)
+    # test('test-C001.txt', 'C001', top)
+    # --------------------
     x = 1
