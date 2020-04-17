@@ -1,7 +1,7 @@
 from basics import get_sdic
 from vklause import VKlause
 from visualizer import Visualizer
-from TransKlauseEngine import TransKlauseEngine, make_vkdic
+from TransKlauseEngine import TransKlauseEngine, make_vkdic, trans_vkdic
 
 
 class BitDic:
@@ -25,6 +25,7 @@ class BitDic:
             self.dic[i] = [[], []]
         self.add_clause()
         self.coversion_path = []
+        self.short_kns = []         # kns with dic length reduced (<3)
         self.vis = Visualizer(self.vkdic, self.nov)
 
     def split_topbit(self):
@@ -53,11 +54,31 @@ class BitDic:
                 # no need to drop top bit, they don't have it.
                 vkdic_mix[kn] = VKlause(kn, vklause.dic, tb)
 
-        vkdic0_pure.update(vkdic_mix)
-        vkdic1_pure.update(vkdic_mix)
-        bitdic0 = BitDic(self.name + '-0', vkdic0_pure, tb)
-        bitdic1 = BitDic(self.name + '-1', vkdic1_pure, tb)
-        return bitdic0, bitdic1
+        vkdic0_pure.update(vkdic_mix)  # add mix-dic to 0-dic
+        vkdic1_pure.update(vkdic_mix)  # add mix-dic to 1-dic
+
+        bitdic0 = BitDic(self.name + f'-{tb}@0', vkdic0_pure, tb)
+        bitdic0.coversion_path.append(f'{tb}@0')
+        bitdic0.set_short_kns(self.dic[tb][0])
+
+        bitdic1 = BitDic(self.name + f'-{tb}@1', vkdic1_pure, tb)
+        bitdic1.coversion_path.append(f'{tb}@1')
+        bitdic1.set_short_kns(self.dic[tb][1])
+
+        # bitdic1 be tx-ed on 1 of its shortkns
+        bitdic1t, tx_seed = bitdic1.TxTopKn()
+        print(f'for bitdic1t Tx-seed:{tx_seed}')
+        return bitdic0, bitdic1, bitdic1t
+
+    def set_short_kns(self, kns):
+        self.short_kns = kns
+
+    def TxTopKn(self):
+        seed_kn = self.short_kns[0]
+        new_vkdic, tx = trans_vkdic(self.vkdic, seed_kn, self.nov, True)
+        bitdic = BitDic(self.name + 't', new_vkdic, self.nov)
+        bitdic.coversion_path.append(tx)
+        return bitdic, seed_kn
 
     def add_clause(self, vk=None):
         # add clause c into bit-dict
@@ -84,13 +105,16 @@ class BitDic:
 
 def make_bitdic(conf_filename):
     sdic = get_sdic(conf_filename)
-    vkdic = make_vkdic(sdic['kdic'])
+    vkdic = make_vkdic(sdic['kdic'], sdic['nov'])
     bitdic = BitDic("Org", vkdic, sdic['nov'])
     return bitdic
 
 
 if __name__ == '__main__':
     bdic = make_bitdic('config1.json')
-    bdic0, bdic1 = bdic.split_topbit()
     # bdic.visualize()
+    bdic0, bdic1, bdic1t = bdic.split_topbit()
+    bdic0.visualize()
+    bdic1.visualize()
+    bdic1t.visualize()
     x = 1

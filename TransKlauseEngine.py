@@ -17,21 +17,21 @@ test_dic = {
 }
 
 
-def make_vkdic(kdic):
+def make_vkdic(kdic, nov):
     vkdic = {}
     for kn, klause in kdic.items():
-        vkdic[kn] = VKlause(kn, klause, 6)
+        vkdic[kn] = VKlause(kn, klause, nov)
     return vkdic
 
 
-def trans_vkdic(vkd, seed_kn, top):
-    tx = TransKlauseEngine(vkd[seed_kn], 6, top)
+def trans_vkdic(vkd, seed_kn, nov, top):
+    tx = TransKlauseEngine(vkd[seed_kn], nov, top)
     vkdic = {}
     for kn, vk in vkd.items():
         if kn == seed_kn:
-            vkdic[kn] = VKlause(kn, tx.klause, 6)
+            vkdic[kn] = VKlause(kn, tx.klause, nov)
         else:
-            vkdic[kn] = VKlause(kn, tx.trans_klause(vk.dic), 6)
+            vkdic[kn] = VKlause(kn, tx.trans_klause(vk.dic), nov)
     return vkdic, tx
 
 
@@ -148,10 +148,10 @@ class TransKlauseEngine:
 
 
 def test(filename, seed, top):
-    vkd = make_vkdic(_kdic)
+    vkd = make_vkdic(_kdic, 8)
 
-    new_vkd, tx = trans_vkdic(vkd, seed, top)
-    vis = Visualizer(new_vkd, 6)
+    new_vkd, tx = trans_vkdic(vkd, seed, 8, top)
+    vis = Visualizer(new_vkd, 8)
     vis.output(filename, tx)
     '''
     if seed == 'C001':

@@ -24,6 +24,8 @@ class Visualizer:
     def output(self, filename, tx=None):
         knames, koutput = self.output_vkdic()
         fil = open('./verify/' + filename, 'w')
+        fil.write(filename + '\n')
+        fil.write('-'*60 + '\n')
         if tx:
             line = 'txn: ' + str(tx.bitname_tx) + ',  '
             line += 'txv: ' + str(tx.bitvalue_tx) + '\n'
