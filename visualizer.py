@@ -18,7 +18,7 @@ class Visualizer:
         msg = ''
         for kn in knames:
             msg += self.output_vklause(kn) + '\n'
-        msg += '-'*60 + '\n'
+        # msg += '-'*60 + '\n'
         return knames, msg
 
     def output(self, filename, tx=None):
@@ -29,10 +29,16 @@ class Visualizer:
         if tx:
             line = 'txn: ' + str(tx.bitname_tx) + ',  '
             line += 'txv: ' + str(tx.bitvalue_tx) + '\n'
-            fil.write(line + '-'*60 + '\n')
+            fil.write(line + '\n')
         fil.write(koutput)
+        line = '------ '
+        for i in range(self.nov):
+            line += str(self.nov - i - 1) + '--'
+        fil.write(line + '\n')
         for v in range(2**self.nov):
-            line = str(v).zfill(4) + ': '
+            head = str(v).zfill(5) + ': '
+            msg = '  '.join(list(bin(v)[2:].zfill(self.nov)))
+            line = head + msg + ' $ '
             for kn in knames:
                 if self.vkdic[kn].hit(v):
                     line += f'{kn} '

@@ -107,7 +107,7 @@ class BitDic:
 def make_initial_bitdic(conf_filename):
     sdic = get_sdic(conf_filename)
     vkdic = make_vkdic(sdic['kdic'], sdic['nov'])
-    bitdic = BitDic("Org", vkdic, sdic['nov'])
+    bitdic = BitDic("C001", "Org", vkdic, sdic['nov'])
     return bitdic
 
 
