@@ -1,7 +1,7 @@
 from basics import get_sdic
 from vklause import VKlause
 from visualizer import Visualizer
-from TransKlauseEngine import TransKlauseEngine, make_vkdic, trans_vkdic
+from TransKlauseEngine import make_vkdic, trans_vkdic
 
 
 class BitDic:
@@ -58,11 +58,19 @@ class BitDic:
         vkdic0_pure.update(vkdic_mix)  # add mix-dic to 0-dic
         vkdic1_pure.update(vkdic_mix)  # add mix-dic to 1-dic
 
-        bitdic0 = BitDic('C001', self.name + f'-{tb}@0', vkdic0_pure, tb)
+        bitdic0 = BitDic(
+            self.seed_name,
+            self.name + f'-{tb}@0',
+            vkdic0_pure,
+            tb)
         bitdic0.coversion_path.append(f'{tb}@0')
         bitdic0.set_short_kns(self.dic[tb][0])
 
-        bitdic1 = BitDic('C001', self.name + f'-{tb}@1', vkdic1_pure, tb)
+        bitdic1 = BitDic(
+            '~' + self.seed_name,
+            self.name + f'-{tb}@1',
+            vkdic1_pure,
+            tb)
         bitdic1.coversion_path.append(f'{tb}@1')
         bitdic1.set_short_kns(self.dic[tb][1])
 
@@ -74,11 +82,13 @@ class BitDic:
     def set_short_kns(self, kns):
         self.short_kns = kns
 
-    def TxTopKn(self):
-        seed_kn = self.short_kns[0]
+    def TxTopKn(self, seed_kn=None):
+        if seed_kn == None:
+            seed_kn = self.short_kns[0]
         new_vkdic, tx = trans_vkdic(self.vkdic, seed_kn, self.nov, True)
         bitdic = BitDic(seed_kn, self.name + 't', new_vkdic, self.nov)
         bitdic.coversion_path.append(tx)
+        bitdic.short_kns = self.short_kns[:]  # shorts have the same names
         return bitdic, seed_kn
 
     def add_clause(self, vk=None):
@@ -101,7 +111,7 @@ class BitDic:
             return self
 
     def visualize(self):
-        self.vis.output(self.name + '.txt')
+        self.vis.output(self)
 
 
 def make_initial_bitdic(conf_filename):

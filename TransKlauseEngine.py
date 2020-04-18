@@ -25,7 +25,7 @@ def make_vkdic(kdic, nov):
 
 
 def trans_vkdic(vkd, seed_kn, nov, top):
-    tx = TransKlauseEngine(vkd[seed_kn], nov, top)
+    tx = TransKlauseEngine(seed_kn, vkd[seed_kn], nov, top)
     vkdic = {}
     for kn, vk in vkd.items():
         if kn == seed_kn:
@@ -43,13 +43,22 @@ class TransKlauseEngine:
         """
 
     def __init__(self,
+                 kname,         # name of the klause
                  base_vklause,  # inst of VKlause
                  nov,           # number of bits in value-space
                  top=True):     # transfer to top (0s) or bottom (1s)
+        self.kname = kname
         self.start_vklause = base_vklause
         self.nov = nov
         self.top = top
         self.setup_tx_operators()
+
+    def output(self):
+        msg = self.kname + ': '+str(self.start_vklause.dic) + ', '
+        msg += 'txn: ' + str(self.bitname_tx) + ', '
+        msg += 'txv: ' + str(self.bitvalue_tx) + '\n'
+        msg += '-'*60
+        return msg
 
     def setup_tx_operators(self):
         bits = self.start_vklause.bits[:]

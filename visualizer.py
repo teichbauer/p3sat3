@@ -13,22 +13,28 @@ class Visualizer:
         msg += ' }'
         return msg
 
-    def output_vkdic(self):
+    def output_vkdic(self, seed_name):
         knames = sorted(list(self.vkdic.keys()))
         msg = ''
         for kn in knames:
-            msg += self.output_vklause(kn) + '\n'
+            msg += self.output_vklause(kn)
+            if kn == seed_name:
+                msg += "  seed"
+            msg += '\n'
         # msg += '-'*60 + '\n'
         return knames, msg
 
-    def output(self, filename, tx=None):
-        knames, koutput = self.output_vkdic()
+    def output(self, bdic, tx=None):
+        filename = bdic.name + '.txt'
+        if not tx and len(bdic.coversion_path) > 0 and\
+                type(bdic.coversion_path[-1]) != type(''):
+            tx = bdic.coversion_path[-1]
+        knames, koutput = self.output_vkdic(bdic.seed_name)
         fil = open('./verify/' + filename, 'w')
         fil.write(filename + '\n')
         fil.write('-'*60 + '\n')
         if tx:
-            line = 'txn: ' + str(tx.bitname_tx) + ',  '
-            line += 'txv: ' + str(tx.bitvalue_tx) + '\n'
+            line = tx.output()
             fil.write(line + '\n')
         fil.write(koutput)
         line = '------ '
