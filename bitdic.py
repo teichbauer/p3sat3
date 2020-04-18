@@ -16,7 +16,8 @@ class BitDic:
         self.dic[7][1] -> [<list of clause-names, that use this bit, value:1>]
         '''
 
-    def __init__(self, bdname, vkdic, nov):   # O(m)
+    def __init__(self, seed_name, bdname, vkdic, nov):   # O(m)
+        self.seed_name = seed_name
         self.name = bdname
         self.nov = nov
         self.dic = {}   # keyed by bits, value: [[0-kns],[1-kns]]
@@ -57,11 +58,11 @@ class BitDic:
         vkdic0_pure.update(vkdic_mix)  # add mix-dic to 0-dic
         vkdic1_pure.update(vkdic_mix)  # add mix-dic to 1-dic
 
-        bitdic0 = BitDic(self.name + f'-{tb}@0', vkdic0_pure, tb)
+        bitdic0 = BitDic('C001', self.name + f'-{tb}@0', vkdic0_pure, tb)
         bitdic0.coversion_path.append(f'{tb}@0')
         bitdic0.set_short_kns(self.dic[tb][0])
 
-        bitdic1 = BitDic(self.name + f'-{tb}@1', vkdic1_pure, tb)
+        bitdic1 = BitDic('C001', self.name + f'-{tb}@1', vkdic1_pure, tb)
         bitdic1.coversion_path.append(f'{tb}@1')
         bitdic1.set_short_kns(self.dic[tb][1])
 
@@ -76,7 +77,7 @@ class BitDic:
     def TxTopKn(self):
         seed_kn = self.short_kns[0]
         new_vkdic, tx = trans_vkdic(self.vkdic, seed_kn, self.nov, True)
-        bitdic = BitDic(self.name + 't', new_vkdic, self.nov)
+        bitdic = BitDic(seed_kn, self.name + 't', new_vkdic, self.nov)
         bitdic.coversion_path.append(tx)
         return bitdic, seed_kn
 
@@ -103,18 +104,25 @@ class BitDic:
         self.vis.output(self.name + '.txt')
 
 
-def make_bitdic(conf_filename):
+def make_initial_bitdic(conf_filename):
     sdic = get_sdic(conf_filename)
     vkdic = make_vkdic(sdic['kdic'], sdic['nov'])
     bitdic = BitDic("Org", vkdic, sdic['nov'])
     return bitdic
 
 
-if __name__ == '__main__':
-    bdic = make_bitdic('config1.json')
-    # bdic.visualize()
+def test():
+    bdic = make_initial_bitdic('config1.json')
+    bdic.visualize()
+
+    # split into 2: bdic0(bit-7 = 0) / bdic1(bit-7 = 1)
+    # Tx (bdic1) -> bdic1t
     bdic0, bdic1, bdic1t = bdic.split_topbit()
     bdic0.visualize()
     bdic1.visualize()
     bdic1t.visualize()
+
+
+if __name__ == '__main__':
+    test()
     x = 1

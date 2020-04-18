@@ -1,3 +1,6 @@
+0.3.149-20200417
+- separate test to solver4.py
+- give BitDic a seed-name
 0.3.148-20200417
 - fixes
 0.3.147-20200417
