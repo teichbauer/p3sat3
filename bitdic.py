@@ -22,6 +22,10 @@ class BitDic:
         self.nov = nov
         self.dic = {}   # keyed by bits, value: [[0-kns],[1-kns]]
         self.vkdic = vkdic
+        self.pretx = None  # in case this is a Tx-ed BitDic, the pretx parent
+        self.done = False
+        if nov == 5 and vkdic[seed_name].nob == 0:
+            self.done = True
         for i in range(nov):        # number_of_variables from config
             self.dic[i] = [[], []]
         self.add_clause()
@@ -31,9 +35,9 @@ class BitDic:
 
     def split_topbit(self):
         tb = self.nov - 1   # top bit number
-        vkdic0_pure = {}    # vks with top-bit == 0
-        vkdic1_pure = {}    # vks with top-bit == 1
-        vkdic_mix = {}      # vks with top-bit not used
+        vkdic0 = {}     # vks with top-bit == 0
+        vkdic1 = {}     # vks with top-bit == 1
+        vkdic_mix = {}  # vks with top-bit not used
 
         kns = list(self.vkdic.keys())
 
@@ -41,55 +45,88 @@ class BitDic:
             vklause = self.vkdic[kn]
             # drop top bit, nov decrease by 1 (tp)
             vklause.dic.pop(tb)
-            vkdic0_pure[kn] = VKlause(kn, vklause.dic, tb)
+            vkdic0[kn] = VKlause(kn, vklause.dic, tb)
 
         for kn in self.dic[tb][1]:
             vklause = self.vkdic[kn]
             # drop top bit, nov decrease by 1 (tp)
             vklause.dic.pop(tb)
-            vkdic1_pure[kn] = VKlause(kn, vklause.dic, tb)
+            vkdic1[kn] = VKlause(kn, vklause.dic, tb)
 
         for kn in kns:
-            if kn not in vkdic0_pure and kn not in vkdic1_pure:
+            if kn not in vkdic0 and kn not in vkdic1:
                 vklause = self.vkdic[kn]
                 # no need to drop top bit, they don't have it.
                 vkdic_mix[kn] = VKlause(kn, vklause.dic, tb)
 
-        vkdic0_pure.update(vkdic_mix)  # add mix-dic to 0-dic
-        vkdic1_pure.update(vkdic_mix)  # add mix-dic to 1-dic
+        vkdic0.update(vkdic_mix)  # add mix-dic to 0-dic
+        vkdic1.update(vkdic_mix)  # add mix-dic to 1-dic
 
         bitdic0 = BitDic(
             self.seed_name,
             self.name + f'-{tb}@0',
-            vkdic0_pure,
+            vkdic0,
             tb)
         bitdic0.coversion_path.append(f'{tb}@0')
         bitdic0.set_short_kns(self.dic[tb][0])
 
-        bitdic1 = BitDic(
-            '~' + self.seed_name,
+        seed = self.set_txseed(vkdic1)
+        bitdic_tmp = BitDic(
+            seed,
             self.name + f'-{tb}@1',
-            vkdic1_pure,
+            vkdic1,
             tb)
-        bitdic1.coversion_path.append(f'{tb}@1')
+        bitdic1.coversion_path.append(f'{tb}@1tmp')
         bitdic1.set_short_kns(self.dic[tb][1])
 
         # bitdic1 be tx-ed on 1 of its shortkns
-        bitdic1t, tx_seed = bitdic1.TxTopKn()
+        bitdic1 = bitdic1.TxTopKn(seed)
         print(f'for bitdic1t Tx-seed:{tx_seed}')
-        return bitdic0, bitdic1, bitdic1t
+        return bitdic0, bitdic1
 
     def set_short_kns(self, kns):
         self.short_kns = kns
 
-    def TxTopKn(self, seed_kn=None):
-        if seed_kn == None:
-            seed_kn = self.short_kns[0]
-        new_vkdic, tx = trans_vkdic(self.vkdic, seed_kn, self.nov, True)
+    def set_txseed(self, vkdic):
+        ''' pick a kn in vkdic with shortest dic
+            '''
+        L = 4     # bigger than any klause length, so it will bereplaced
+        lst = []  # list of kns with the same shortest length
+        for kn in vkdic.items():
+            if vkdic[kn].nob < L:
+                L = vkdic[kn].nob
+                # remove kns in lst with length > L
+                i = 0
+                while i < len(lst):
+                    if self.vkdic[lst[i]].nob > L:
+                        lst.pop(i)
+                    else:
+                        i += 1
+                lst.append(kn)
+        # TBD: amng kns in lst, pick 1 based on ..?
+        return lst[0]
+
+    def pick_seed(self):
+        L = 3
+        seed = ''
+        # for kn in self.short_kns:
+        for kn in self.vkdic:
+            if self.vkdic[kn].nob < L:
+                seed = kn
+                L = self.vkdic[kn].nob
+        return seed, L
+
+    def TxTopKn(self, tx_seed):
+        new_vkdic, tx = trans_vkdic(
+            self.vkdic,     # tx all vkdic members
+            tx_seed,        # seed-kn for Tx
+            self.nov,       # nov remains the same
+            True)           # Tx-to-top-position: True
         bitdic = BitDic(seed_kn, self.name + 't', new_vkdic, self.nov)
         bitdic.coversion_path.append(tx)
         bitdic.short_kns = self.short_kns[:]  # shorts have the same names
-        return bitdic, seed_kn
+        bitdic.pretx = self
+        return bitdic
 
     def add_clause(self, vk=None):
         # add clause c into bit-dict

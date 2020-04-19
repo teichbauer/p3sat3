@@ -1,4 +1,6 @@
-from bitdic import make_initial_bitdic
+from bitdic import make_initial_bitdic, BitDic
+from basics import get_sdic
+from TransKlauseEngine import make_vkdic, trans_vkdic
 
 
 def test():
@@ -62,6 +64,23 @@ def test():
     x = 0
 
 
+def initial_bitdic(conf_filename, seed):
+    sdic = get_sdic(conf_filename)
+    vkdic = make_vkdic(sdic['kdic'], sdic['nov'])
+    bitdic = BitDic(seed, seed, vkdic, sdic['nov'])
+    return bitdic
+
+
+def sub_tree(bdic):
+    bdic.visualize()
+
+
+def loop_tree(conf_filename, seed):
+    bitdic = initial_bitdic(conf_filename, seed)
+    sub_tree(bitdic)
+
+
 if __name__ == '__main__':
-    test()
+    # test()
+    loop_tree('config1.json', 'C001')
     x = 1
