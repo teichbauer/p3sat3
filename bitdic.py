@@ -22,14 +22,14 @@ class BitDic:
         self.nov = nov
         self.dic = {}   # keyed by bits, value: [[0-kns],[1-kns]]
         self.vkdic = vkdic
-        self.pretx = None  # in case this is a Tx-ed BitDic, the pretx parent
+        self.parent = None  # the parent that generated / tx-to self
         self.done = False
-        if nov == 5 and vkdic[seed_name].nob == 0:
+        if nov <= 5 and vkdic[seed_name].nob == 0:
             self.done = True
         for i in range(nov):        # number_of_variables from config
             self.dic[i] = [[], []]
         self.add_clause()
-        self.coversion_path = []
+        self.conversion = None
         self.short_kns = []         # kns with dic length reduced (<3)
         self.vis = Visualizer(self.vkdic, self.nov)
 
@@ -67,22 +67,34 @@ class BitDic:
             self.name + f'-{tb}@0',
             vkdic0,
             tb)
-        bitdic0.coversion_path.append(f'{tb}@0')
+        bitdic0.conversion = f'{tb}@0'
+        bitdic0.parent = self
         bitdic0.set_short_kns(self.dic[tb][0])
 
         seed = self.set_txseed(vkdic1)
-        bitdic_tmp = BitDic(
-            seed,
-            self.name + f'-{tb}@1',
-            vkdic1,
-            tb)
-        bitdic1.coversion_path.append(f'{tb}@1tmp')
-        bitdic1.set_short_kns(self.dic[tb][1])
+        if seed == None:
+            return self.get_sat(), None
+        else:
+            bitdic_tmp = BitDic(
+                seed,
+                self.name + f'-{tb}@1',
+                vkdic1,
+                tb)
+            bitdic_tmp.conversion = f'{tb}@1tmp'
+            bitdic_tmp.parent = self
+            bitdic_tmp.set_short_kns(self.dic[tb][1])
 
-        # bitdic1 be tx-ed on 1 of its shortkns
-        bitdic1 = bitdic1.TxTopKn(seed)
-        print(f'for bitdic1t Tx-seed:{tx_seed}')
-        return bitdic0, bitdic1
+            # bitdic1 be tx-ed on 1 of its shortkns
+            bitdic1 = bitdic_tmp.TxTopKn(seed)
+            print(f'for bitdic1t Tx-seed:{seed}')
+            return bitdic0, bitdic1
+
+    def get_sat(self):
+        if type(self.conversion) == type(''):
+            pass
+        else:
+            pass
+        return 234
 
     def set_short_kns(self, kns):
         self.short_kns = kns
@@ -92,7 +104,7 @@ class BitDic:
             '''
         L = 4     # bigger than any klause length, so it will bereplaced
         lst = []  # list of kns with the same shortest length
-        for kn in vkdic.items():
+        for kn in vkdic:
             if vkdic[kn].nob < L:
                 L = vkdic[kn].nob
                 # remove kns in lst with length > L
@@ -104,6 +116,9 @@ class BitDic:
                         i += 1
                 lst.append(kn)
         # TBD: amng kns in lst, pick 1 based on ..?
+        if len(lst) == 0:
+            x = 1
+            return None
         return lst[0]
 
     def pick_seed(self):
@@ -122,10 +137,10 @@ class BitDic:
             tx_seed,        # seed-kn for Tx
             self.nov,       # nov remains the same
             True)           # Tx-to-top-position: True
-        bitdic = BitDic(seed_kn, self.name + 't', new_vkdic, self.nov)
-        bitdic.coversion_path.append(tx)
+        bitdic = BitDic(tx_seed, self.name + 't', new_vkdic, self.nov)
+        bitdic.conversion = tx
         bitdic.short_kns = self.short_kns[:]  # shorts have the same names
-        bitdic.pretx = self
+        bitdic.parent = self
         return bitdic
 
     def add_clause(self, vk=None):

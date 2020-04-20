@@ -73,6 +73,14 @@ def initial_bitdic(conf_filename, seed):
 
 def sub_tree(bdic):
     bdic.visualize()
+    if not bdic.done:
+        bdic0, bdic1 = bdic.split_topbit()
+        if type(bdic0) == type(1):
+            print(bdic0)    # SAT!
+        else:
+            sub_tree(bdic0)
+            sub_tree(bdic1)
+    x = 1
 
 
 def loop_tree(conf_filename, seed):

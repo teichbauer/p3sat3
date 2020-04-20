@@ -1,3 +1,7 @@
+0.3.154-20200419
+- hit satpoint when C001-7@1t-6@1t-5@0-4@1t-3@1t-2@1t-1@1t.txt
+  is split, here vkdic becomes empty
+- designing how to handle that. Good!
 0.3.153-20200419
 - some refactoring in bidtdic and solver4
 - start coding recursive tree_loop/sub_tree

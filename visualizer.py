@@ -26,9 +26,9 @@ class Visualizer:
 
     def output(self, bdic, tx=None):
         filename = bdic.name + '.txt'
-        if not tx and len(bdic.coversion_path) > 0 and\
-                type(bdic.coversion_path[-1]) != type(''):
-            tx = bdic.coversion_path[-1]
+        if not tx and len(bdic.conversion) > 0 and\
+                type(bdic.conversion) != type(''):
+            tx = bdic.conversion
         knames, koutput = self.output_vkdic(bdic.seed_name)
         fil = open('./verify/' + filename, 'w')
         fil.write(filename + '\n')
