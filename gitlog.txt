@@ -1,3 +1,5 @@
+0.3.155-20200420
+- fixes
 0.3.154-20200419
 - hit satpoint when C001-7@1t-6@1t-5@0-4@1t-3@1t-2@1t-1@1t.txt
   is split, here vkdic becomes empty
