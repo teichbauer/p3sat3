@@ -80,7 +80,7 @@ class BitDic:
                 self.name + f'-{tb}@1',
                 vkdic1,
                 tb)
-            bitdic_tmp.conversion = f'{tb}@1tmp'
+            bitdic_tmp.conversion = f'{tb}@1'
             bitdic_tmp.parent = self
             bitdic_tmp.set_short_kns(self.dic[tb][1])
 
