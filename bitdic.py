@@ -24,8 +24,8 @@ class BitDic:
         self.vkdic = vkdic
         self.parent = None  # the parent that generated / tx-to self
         self.done = False
-        if nov <= 5 and vkdic[seed_name].nob == 0:
-            self.done = True
+        # if nov <= 5 and vkdic[seed_name].nob == 0:
+        #     self.done = True
         for i in range(nov):        # number_of_variables from config
             self.dic[i] = [[], []]
         self.add_clause()
@@ -44,13 +44,13 @@ class BitDic:
         for kn in self.dic[tb][0]:
             vklause = self.vkdic[kn]
             # drop top bit, nov decrease by 1 (tp)
-            vklause.dic.pop(tb)
+            vklause.dic.pop(tb, None)
             vkdic0[kn] = VKlause(kn, vklause.dic, tb)
 
         for kn in self.dic[tb][1]:
             vklause = self.vkdic[kn]
             # drop top bit, nov decrease by 1 (tp)
-            vklause.dic.pop(tb)
+            vklause.dic.pop(tb, None)
             vkdic1[kn] = VKlause(kn, vklause.dic, tb)
 
         for kn in kns:
@@ -67,37 +67,70 @@ class BitDic:
             self.name + f'-{tb}@0',
             vkdic0,
             tb)
+
         bitdic0.conversion = f'{tb}@0'
         bitdic0.parent = self
-        bitdic0.set_short_kns(self.dic[tb][0])
+
+        sat = bitdic0.test4_finish()
+        if sat != None:
+            return sat, None
 
         seed = self.set_txseed(vkdic1)
         if seed == None:
-            return self.get_sat(), None
+            # with vkdic empty, there is only 1 line of value,
+            # the search of v is just one single line, starting with 0.
+            # so v = 0
+            return self.get_sat(0), None
         else:
             bitdic_tmp = BitDic(
                 seed,
                 self.name + f'-{tb}@1',
                 vkdic1,
                 tb)
+
             bitdic_tmp.conversion = f'{tb}@1'
             bitdic_tmp.parent = self
-            bitdic_tmp.set_short_kns(self.dic[tb][1])
 
-            # bitdic1 be tx-ed on 1 of its shortkns
-            bitdic1 = bitdic_tmp.TxTopKn(seed)
-            print(f'for bitdic1t Tx-seed:{seed}')
+            sat = bitdic_tmp.test4_finish()
+            if sat != None:
+                return sat, None
+
+            if not bitdic_tmp.done:
+                # bitdic1 be tx-ed on 1 of its shortkns
+                bitdic1 = bitdic_tmp.TxTopKn(seed)
+                print(f'for bitdic1t Tx-seed:{seed}')
+            else:
+                bitdic1 = bitdic_tmp
             return bitdic0, bitdic1
 
-    def get_sat(self):
-        if type(self.conversion) == type(''):
-            pass
-        else:
-            pass
-        return 234
+    def get_sat(self, v):
+        node = self
+        # with vkdic empty, there is only 1 line of value, the search of v
+        # is just one single line, starting with 0. so v = 0
+        while node:
+            if node.conversion == None:  # reached root-seed
+                break
+            if type(node.conversion) == type(''):
+                splt = node.conversion.split('@')
+                shift, bitvalue = int(splt[0]), int(splt[1])
+                if bitvalue == 1:
+                    v = v + 1 << shift
+            else:
+                tx = node.conversion
+                v = tx.reverse_value(v)
+            node = node.parent
+        return v
 
-    def set_short_kns(self, kns):
-        self.short_kns = kns
+    def test4_finish(self):
+        self.done = self.nov <= 5 and \
+            self.vkdic[self.seed_name].nob == 0
+        sat = None
+        if not self.done and self.nov == 1:
+            if len(self.dic[0][0]) == 0:
+                sat = self.get_sat(0)
+            if len(self.dic[0][1]) == 0:
+                sat = self.get_sat(1)
+        return sat
 
     def set_txseed(self, vkdic):
         ''' pick a kn in vkdic with shortest dic
@@ -147,13 +180,20 @@ class BitDic:
         # add clause c into bit-dict
         def add_vk(self, vkn):
             vclause = self.vkdic[vkn]
-            for bit, v in vclause.dic.items():  # bit: bit-position, v: 0 or 1
-                # lst: [[<0-valued cs>],[<1-cs>]]
-                lst = self.dic.get(bit, [[], []])
-                if vkn not in lst[v]:  # v is bit-value: 0 or 1
-                    # put vkn in 0-list, or 1-list
-                    lst[v].append(vkn)
-            return vclause
+            if len(vclause.dic) == 0:
+                # when klause is empty, it is in every bit-value
+                for b in self.dic:
+                    self.dic[b][0].append(vkn)
+                    self.dic[b][1].append(vkn)
+            else:
+                for bit, v in vclause.dic.items():
+                    # bit: bit-position, v: 0 or 1
+                    # lst: [[<0-valued cs>],[<1-cs>]]
+                    lst = self.dic.get(bit, [[], []])
+                    if vkn not in lst[v]:  # v is bit-value: 0 or 1
+                        # put vkn in 0-list, or 1-list
+                        lst[v].append(vkn)
+                return vclause
 
         if vk:
             return add_vk(self, vk)
