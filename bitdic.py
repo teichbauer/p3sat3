@@ -114,7 +114,7 @@ class BitDic:
                 splt = node.conversion.split('@')
                 shift, bitvalue = int(splt[0]), int(splt[1])
                 if bitvalue == 1:
-                    v = v + 1 << shift
+                    v = v + (1 << shift)
             else:
                 tx = node.conversion
                 v = tx.reverse_value(v)

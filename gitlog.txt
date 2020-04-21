@@ -1,3 +1,10 @@
+0.3.157-20200421
+- fix a simple bug in bitdic.py:
+     v = v + 1 << shift  
+  should be 
+     v = v + (1 << shift)
+- success! got the right sat: 234.
+- completed doc/path-of-sat.txt describes the whole process of finding SAT.
 0.3.156-20200421
 - still not getting the right sat. But did many fixes, and getting near.
 0.3.155-20200420
