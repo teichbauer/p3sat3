@@ -3,6 +3,17 @@ from vklause import VKlause
 from visualizer import Visualizer
 from TransKlauseEngine import make_vkdic, trans_vkdic
 
+perf_count = {
+    "subtree-call": 0,
+    "BitDic-init": 0,
+    "TxTopKn": 0,
+    "add_clause": 0,
+    "pick_seed": 0,
+    "set_txseed": 0,
+    "test4_finish": 0,
+    "split_topbit": 0
+}
+
 
 class BitDic:
     ''' maintain a bit-dict:
@@ -17,6 +28,7 @@ class BitDic:
         '''
 
     def __init__(self, seed_name, bdname, vkdic, nov):   # O(m)
+        perf_count["BitDic-init"] += 1
         self.seed_name = seed_name
         self.name = bdname
         self.nov = nov
@@ -34,6 +46,7 @@ class BitDic:
         self.vis = Visualizer(self.vkdic, self.nov)
 
     def split_topbit(self):
+        perf_count["split_topbit"] += 1
         tb = self.nov - 1   # top bit number
         vkdic0 = {}     # vks with top-bit == 0
         vkdic1 = {}     # vks with top-bit == 1
@@ -98,7 +111,7 @@ class BitDic:
             if not bitdic_tmp.done:
                 # bitdic1 be tx-ed on 1 of its shortkns
                 bitdic1 = bitdic_tmp.TxTopKn(seed)
-                print(f'for bitdic1t Tx-seed:{seed}')
+                # print(f'for bitdic1t Tx-seed:{seed}')
             else:
                 bitdic1 = bitdic_tmp
             return bitdic0, bitdic1
@@ -122,6 +135,7 @@ class BitDic:
         return v
 
     def test4_finish(self):
+        perf_count["test4_finish"] += 1
         self.done = self.nov <= 5 and \
             self.vkdic[self.seed_name].nob == 0
         sat = None
@@ -135,6 +149,7 @@ class BitDic:
     def set_txseed(self, vkdic):
         ''' pick a kn in vkdic with shortest dic
             '''
+        perf_count["set_txseed"] += 1
         L = 4     # bigger than any klause length, so it will bereplaced
         lst = []  # list of kns with the same shortest length
         for kn in vkdic:
@@ -155,6 +170,7 @@ class BitDic:
         return lst[0]
 
     def pick_seed(self):
+        perf_count["pick_seed"] += 1
         L = 3
         seed = ''
         # for kn in self.short_kns:
@@ -165,6 +181,7 @@ class BitDic:
         return seed, L
 
     def TxTopKn(self, tx_seed):
+        perf_count["TxTopKn"] += 1
         new_vkdic, tx = trans_vkdic(
             self.vkdic,     # tx all vkdic members
             tx_seed,        # seed-kn for Tx
@@ -177,7 +194,9 @@ class BitDic:
         return bitdic
 
     def add_clause(self, vk=None):
+        perf_count["add_clause"] += 1
         # add clause c into bit-dict
+
         def add_vk(self, vkn):
             vclause = self.vkdic[vkn]
             if len(vclause.dic) == 0:

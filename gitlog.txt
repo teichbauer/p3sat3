@@ -1,3 +1,6 @@
+0.3.158-20200421
+- clean up a bit
+- added perf_count for performance analysis, and pretty-print of that.
 0.3.157-20200421
 - fix a simple bug in bitdic.py:
      v = v + 1 << shift  

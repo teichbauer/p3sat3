@@ -1,6 +1,7 @@
-from bitdic import make_initial_bitdic, BitDic
+from bitdic import make_initial_bitdic, BitDic, perf_count
 from basics import get_sdic
 from TransKlauseEngine import make_vkdic, trans_vkdic
+import pprint
 
 
 def test():
@@ -36,9 +37,9 @@ def test():
     # part0 part1
     # == Org-7@0-6@0 -> Org-7@0-6@0-5@0, Org-7@0-6@0-5@1
     org706050, org706051, org706051t = org7060.split_topbit()
-    org706050.visualize()
-    org706051.visualize()   # transition bdic. For reading only
-    org706051t.visualize()
+    # org706050.visualize()
+    # org706051.visualize()   # transition bdic. For reading only
+    # org706051t.visualize()
 
     # part2 part3
     # == Org-7@0-6@1t -> Org-7@0-6@1t-5@0, Org-7@0-6@1t-5@1t
@@ -71,24 +72,29 @@ def initial_bitdic(conf_filename, seed):
     return bitdic
 
 
-def sub_tree(bdic):
-    bdic.visualize()
+def sub_tree(bdic, debug=False):
+    perf_count["subtree-call"] += 1
+    if debug:
+        bdic.visualize()
+
     if not bdic.done:
         bdic0, bdic1 = bdic.split_topbit()
         if type(bdic0) == type(1):
             print(f'SAT found: {bdic0}')    # SAT!
         else:
-            sub_tree(bdic0)
-            sub_tree(bdic1)
-    x = 1
+            sub_tree(bdic0, debug)
+            sub_tree(bdic1, debug)
 
 
-def loop_tree(conf_filename, seed):
+def loop_tree(conf_filename, seed, debug=False):
     bitdic = initial_bitdic(conf_filename, seed)
     sub_tree(bitdic)
 
 
 if __name__ == '__main__':
+    pp = pprint.PrettyPrinter(indent=4)
     # test()
-    loop_tree('config1.json', 'C001')
-    x = 1
+    debug = False
+    loop_tree('config1.json', 'C001', debug)
+    print('perf-count: ')
+    pp.pprint(perf_count)
