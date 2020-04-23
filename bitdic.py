@@ -86,7 +86,9 @@ class BitDic:
         if sat != None:
             return sat, None
 
-        seed = self.set_txseed(vkdic1)
+        bdic = self.dic.copy()  # clone the bit-dic from self
+        bdic.pop(tb)            # drop the top bit in bdic
+        seed = self.set_txseed(vkdic1, bdic)
         if seed == None:
             # with vkdic empty, there is only 1 line of value,
             # the search of v is just one single line, starting with 0.
@@ -147,8 +149,7 @@ class BitDic:
                 sat = self.get_sat(1)
         return sat
 
-    def most_popular(self):
-        d = self.dic
+    def most_popular(self, d):
         # d[bit] = [[0-kns],[10kns]]
         # len([0-kns]) + len([1-kns]) -> the power of this bit (how popular)
         bit_powers = {}  # <power>:<bit-name>}
@@ -159,7 +160,7 @@ class BitDic:
         kns = d[bit_powers[ps[0]]][0] + d[bit_powers[ps[0]]][1]
         return set(kns)
 
-    def set_txseed(self, vkdic=None):
+    def set_txseed(self, vkdic=None, bdic=None):
         ''' pick/return a kn as seed, in vkdic with shortest dic, and
             also popular
             '''
@@ -167,6 +168,7 @@ class BitDic:
         initial = vkdic == None
         if initial:
             lst = list(self.vkdic.keys())
+            bdic = self.dic
         else:
             L = 4     # bigger than any klause length, so it will bereplaced
             lst = []  # list of kns with the same shortest length
@@ -184,7 +186,7 @@ class BitDic:
         if len(lst) == 0:
             x = 1
             return None
-        popular_kns = self.most_popular()
+        popular_kns = self.most_popular(bdic)
         for kn in lst:
             if kn in popular_kns:
                 return kn

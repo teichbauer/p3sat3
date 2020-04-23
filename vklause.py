@@ -10,11 +10,10 @@ class VKlause:
         self.nov = nov          # number of variables - bits of value space
         self.bits = sorted(list(dic.keys()))  # can be of length: 1,2,3
         self.nob = len(self.bits)             # 1, 2 or 3
-        if len(self.bits) > 0:
-            self.tailsize = self.bits[0]      # gap btwn low bit and 0
-        else:
-            self.tailsize = nov
         self.set_filter_and_mask()
+
+    def clone(self):
+        pass
 
     def set_filter_and_mask(self):
         ''' For the example klause {7:1, 5:0, 2:1}

@@ -1,3 +1,6 @@
+0.3.162-20200423
+- fixes:in bitdic set_txseed: when choose most_popular from bit-dic,
+  the bit-dic should have its top bit popped out.
 0.3.161-20200422
 - missed to put debug in bitic.split_topbit(debug), so that
   the bitdic inst in between also gets printed out/visualize()
