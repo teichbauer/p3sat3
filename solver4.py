@@ -18,7 +18,7 @@ def sub_tree(bdic, debug=False):
         bdic.visualize()
 
     if not bdic.done:
-        bdic0, bdic1 = bdic.split_topbit()
+        bdic0, bdic1 = bdic.split_topbit(debug)
         if type(bdic0) == type(1):
             print(f'SAT found: {bdic0}')    # SAT!
         else:
