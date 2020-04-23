@@ -1,4 +1,11 @@
-0.3.158-20200422
+0.3.160-20200422
+- cmd can do
+    python solver4.py
+    or 
+    python solver4.py debug
+  when debug, all generated bitdics will call .visualize(), and so
+  the solver0 style search space coverages will be printed out.
+0.3.159-20200422
 - better way for picking seed: candidates from most popular bit/knames
   popularity defined as bit in bitdic.dic, with most kns (sume of 0- and
   1-bit value)

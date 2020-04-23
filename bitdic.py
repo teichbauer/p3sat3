@@ -43,7 +43,7 @@ class BitDic:
         self.conversion = None
         self.vis = Visualizer(self.vkdic, self.nov)
 
-    def split_topbit(self):
+    def split_topbit(self, debug=False):
         perf_count["split_topbit"] += 1
         tb = self.nov - 1   # top bit number
         vkdic0 = {}     # vks with top-bit == 0
@@ -101,6 +101,9 @@ class BitDic:
 
             bitdic_tmp.conversion = f'{tb}@1'
             bitdic_tmp.parent = self
+
+            if debug:
+                bitdic_tmp.visualize()
 
             sat = bitdic_tmp.test4_finish()
             if sat != None:
