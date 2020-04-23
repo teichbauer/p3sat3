@@ -88,7 +88,9 @@ def sub_tree(bdic, debug=False):
 
 def loop_tree(conf_filename, seed, debug=False):
     bitdic = initial_bitdic(conf_filename, seed)
-    sub_tree(bitdic)
+    seed = bitdic.set_txseed()
+    new_bitdic = bitdic.TxTopKn(seed)
+    sub_tree(new_bitdic)
 
 
 if __name__ == '__main__':

@@ -1,3 +1,31 @@
+0.3.158-20200422
+- better way for picking seed: candidates from most popular bit/knames
+  popularity defined as bit in bitdic.dic, with most kns (sume of 0- and
+  1-bit value)
+- in solver4.py/loop_tree, where a seed is given manually (C001),
+  I find a better kname as new seed, and use this seed to start.
+  big improvement:
+  As before (using C001 as seed):
+    SAT found: 234
+    perf-count: 
+    {   'BitDic-init': 79,
+        'TxTopKn': 20,
+        'add_clause': 79,
+        'set_txseed': 29,
+        'split_topbit': 29,
+        'subtree-call': 57,
+        'test4_finish': 58}
+  With optimized seed picking -> C002, and also down the tree:
+    SAT found: 234
+    perf-count:
+    {   'BitDic-init': 54,
+        'TxTopKn': 15,
+        'add_clause': 54,
+        'set_txseed': 20,
+        'split_topbit': 19,
+        'subtree-call': 37,
+        'test4_finish': 38}
+
 0.3.158-20200421
 - clean up a bit
 - added perf_count for performance analysis, and pretty-print of that.

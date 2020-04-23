@@ -8,7 +8,6 @@ perf_count = {
     "BitDic-init": 0,
     "TxTopKn": 0,
     "add_clause": 0,
-    "pick_seed": 0,
     "set_txseed": 0,
     "test4_finish": 0,
     "split_topbit": 0
@@ -42,7 +41,6 @@ class BitDic:
             self.dic[i] = [[], []]
         self.add_clause()
         self.conversion = None
-        self.short_kns = []         # kns with dic length reduced (<3)
         self.vis = Visualizer(self.vkdic, self.nov)
 
     def split_topbit(self):
@@ -146,39 +144,48 @@ class BitDic:
                 sat = self.get_sat(1)
         return sat
 
-    def set_txseed(self, vkdic):
-        ''' pick a kn in vkdic with shortest dic
+    def most_popular(self):
+        d = self.dic
+        # d[bit] = [[0-kns],[10kns]]
+        # len([0-kns]) + len([1-kns]) -> the power of this bit (how popular)
+        bit_powers = {}  # <power>:<bit-name>}
+        for b in self.dic:
+            bit_powers[len(d[b][0]) + len(d[b][1])] = b
+        ps = sorted(list(bit_powers.keys()), reverse=True)
+        # all knames in both 0-kns and 1-kns
+        kns = d[bit_powers[ps[0]]][0] + d[bit_powers[ps[0]]][1]
+        return set(kns)
+
+    def set_txseed(self, vkdic=None):
+        ''' pick/return a kn as seed, in vkdic with shortest dic, and
+            also popular
             '''
         perf_count["set_txseed"] += 1
-        L = 4     # bigger than any klause length, so it will bereplaced
-        lst = []  # list of kns with the same shortest length
-        for kn in vkdic:
-            if vkdic[kn].nob < L:
-                L = vkdic[kn].nob
-                # remove kns in lst with length > L
-                i = 0
-                while i < len(lst):
-                    if self.vkdic[lst[i]].nob > L:
-                        lst.pop(i)
-                    else:
-                        i += 1
-                lst.append(kn)
-        # TBD: amng kns in lst, pick 1 based on ..?
+        initial = vkdic == None
+        if initial:
+            lst = list(self.vkdic.keys())
+        else:
+            L = 4     # bigger than any klause length, so it will bereplaced
+            lst = []  # list of kns with the same shortest length
+            for kn in vkdic:
+                if vkdic[kn].nob <= L:
+                    L = vkdic[kn].nob
+                    # remove kns in lst with length > L
+                    i = 0
+                    while i < len(lst):
+                        if self.vkdic[lst[i]].nob > L:
+                            lst.pop(i)
+                        else:
+                            i += 1
+                    lst.append(kn)
         if len(lst) == 0:
             x = 1
             return None
+        popular_kns = self.most_popular()
+        for kn in lst:
+            if kn in popular_kns:
+                return kn
         return lst[0]
-
-    def pick_seed(self):
-        perf_count["pick_seed"] += 1
-        L = 3
-        seed = ''
-        # for kn in self.short_kns:
-        for kn in self.vkdic:
-            if self.vkdic[kn].nob < L:
-                seed = kn
-                L = self.vkdic[kn].nob
-        return seed, L
 
     def TxTopKn(self, tx_seed):
         perf_count["TxTopKn"] += 1
@@ -189,7 +196,6 @@ class BitDic:
             True)           # Tx-to-top-position: True
         bitdic = BitDic(tx_seed, self.name + 't', new_vkdic, self.nov)
         bitdic.conversion = tx
-        bitdic.short_kns = self.short_kns[:]  # shorts have the same names
         bitdic.parent = self
         return bitdic
 
