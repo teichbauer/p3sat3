@@ -44,6 +44,15 @@ class BitDic:
         self.vis = Visualizer(self.vkdic, self.nov)
 
     def split_topbit(self, debug=False):
+        ''' if self.nov = 8, top bit is bit-7.
+            now bit-7 will be dropped, and self be split into
+            2 bitdic:
+            - bitdic0     -- all vks with bit-7 == 0. no Tx.
+            - bitdic_tmp  -- all vks with bit-7 == 1. Tx to
+                bitdic1 with seed picked from bitdic_tmp's vks
+            if bitdic0 or bitdic_tmp has sat, return <sat>, None
+            else, return bitdic0, bitdic1
+            '''
         perf_count["split_topbit"] += 1
         tb = self.nov - 1   # top bit number
         vkdic0 = {}     # vks with top-bit == 0
@@ -65,7 +74,7 @@ class BitDic:
             vkdic1[kn] = VKlause(kn, vklause.dic, tb)
 
         for kn in kns:
-            if kn not in vkdic0 and kn not in vkdic1:
+            if (kn not in vkdic0) and (kn not in vkdic1):
                 vklause = self.vkdic[kn]
                 # no need to drop top bit, they don't have it.
                 vkdic_mix[kn] = VKlause(kn, vklause.dic, tb)
@@ -79,6 +88,8 @@ class BitDic:
             vkdic0,
             tb)
 
+        # from self to bitdic0: bit<tb> with value 0 droped
+        # when converting back, a 0 should be added on tb-bit
         bitdic0.conversion = f'{tb}@0'
         bitdic0.parent = self
 
@@ -96,11 +107,12 @@ class BitDic:
             return self.get_sat(0), None
         else:
             bitdic_tmp = BitDic(
-                seed,
+                f'~{self.seed_name}',
                 self.name + f'-{tb}@1',
                 vkdic1,
                 tb)
-
+            # from self to bitdic_tmp: bit<tb> with value 1 droped
+            # when converting back, a 1 should be added on tb-bit
             bitdic_tmp.conversion = f'{tb}@1'
             bitdic_tmp.parent = self
 
@@ -138,9 +150,18 @@ class BitDic:
         return v
 
     def test4_finish(self):
+        ''' criterion or criteria for being finished(dnoe, or sat):
+            - when the seed vk is empty - it hits all value space
+              which means, that no value left for being sat
+              this will set self.done = True
+            - when nov == 1 (only 1 remaining variable), and
+              the single bit's value 0 or 1 has no hit vk:
+              this 0 ot 1, IS the sought sat value
+            When sat found, return it. If not, self.done = False/True
+            '''
         perf_count["test4_finish"] += 1
-        self.done = self.nov <= 5 and \
-            self.vkdic[self.seed_name].nob == 0
+        self.done = self.nov <= 5 and (not self.seed_name.startswith('~'))\
+            and self.vkdic[self.seed_name].nob == 0
         sat = None
         if not self.done and self.nov == 1:
             if len(self.dic[0][0]) == 0:
@@ -150,10 +171,15 @@ class BitDic:
         return sat
 
     def most_popular(self, d):
-        # d[bit] = [[0-kns],[10kns]]
-        # len([0-kns]) + len([1-kns]) -> the power of this bit (how popular)
+        ''' Among every bit of d[bit] = [[0-kns],[10kns]]
+            find which bit has the most sum: len([0-kns]) + len([1-kns])
+            This is used as the power of this bit (how popular)
+            make a dict keyed by power, value is bit-number
+            return all kns(from both 0/1 bit-values) of 
+            the most power-full, of most popular bit
+            '''
         bit_powers = {}  # <power>:<bit-name>}
-        for b in self.dic:
+        for b in d:
             bit_powers[len(d[b][0]) + len(d[b][1])] = b
         ps = sorted(list(bit_powers.keys()), reverse=True)
         # all knames in both 0-kns and 1-kns

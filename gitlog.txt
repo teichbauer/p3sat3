@@ -1,3 +1,9 @@
+0.3.163-20200423
+- fix and refactoring/add comments in bitdic.py
+- solver4.py: use iterative, in stead of recursion - this will becomes
+  significant when the searh tree gets deep and stack may run out on recursion.
+- doc/path-of-sat-1.txt records the whole tree search path.
+  Will be used to do analysis.
 0.3.162-20200423
 - fixes:in bitdic set_txseed: when choose most_popular from bit-dic,
   the bit-dic should have its top bit popped out.
