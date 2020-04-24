@@ -50,6 +50,7 @@
       'set_txseed': 14,
       'split_topbit': 13,
       'test4_finish': 26}
+
 0.3.163-20200423
 - fix and refactoring/add comments in bitdic.py
 - solver4.py: use iterative, in stead of recursion - this will becomes
