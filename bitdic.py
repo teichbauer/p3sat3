@@ -4,7 +4,6 @@ from visualizer import Visualizer
 from TransKlauseEngine import make_vkdic, trans_vkdic
 
 perf_count = {
-    "subtree-call": 0,
     "BitDic-init": 0,
     "TxTopKn": 0,
     "add_clause": 0,
@@ -35,8 +34,7 @@ class BitDic:
         self.vkdic = vkdic
         self.parent = None  # the parent that generated / tx-to self
         self.done = False
-        # if nov <= 5 and vkdic[seed_name].nob == 0:
-        #     self.done = True
+        self.ordered_vkdic = {}
         for i in range(nov):        # number_of_variables from config
             self.dic[i] = [[], []]
         self.add_clause()
@@ -149,6 +147,30 @@ class BitDic:
             node = node.parent
         return v
 
+    def check_finish(self):
+        rd = sorted(list(self.ordered_vkdic.keys()))
+        if len(rd) > 1:
+            kns = self.ordered_vkdic[rd[0]].copy()
+            if 0 in self.ordered_vkdic:
+                self.done = True
+            elif 1 in self.ordered_vkdic:
+                # check if there are 2 kn in kns, with
+                # the same bit but opposite bit-values
+                # E.G. bit-5:0 vs other bit-5:1)
+                while not self.done and len(kns) >= 2:
+                    kn0 = kns.pop(0)
+                    k0 = self.vkdic[kn0].dic
+                    b0 = list(k0.keys())[0]
+                    for kn in kns:
+                        k = self.vkdic[kn].dic
+                        b = list(k.keys())[0]
+                        if b0 == b and k0[b0] != k[b]:
+                            self.done = True
+                            break
+
+            elif 2 in self.ordered_vkdic:
+                pass
+
     def test4_finish(self):
         ''' criterion or criteria for being finished(dnoe, or sat):
             - when the seed vk is empty - it hits all value space
@@ -160,8 +182,7 @@ class BitDic:
             When sat found, return it. If not, self.done = False/True
             '''
         perf_count["test4_finish"] += 1
-        self.done = self.nov <= 5 and (not self.seed_name.startswith('~'))\
-            and self.vkdic[self.seed_name].nob == 0
+        self.check_finish()
         sat = None
         if not self.done and self.nov == 1:
             if len(self.dic[0][0]) == 0:
@@ -236,7 +257,11 @@ class BitDic:
 
         def add_vk(self, vkn):
             vclause = self.vkdic[vkn]
-            if len(vclause.dic) == 0:
+            length = len(vclause.dic)
+            lst = self.ordered_vkdic.setdefault(length, [])
+            if vkn not in lst:
+                lst.append(vclause.kname)
+            if length == 0:
                 # when klause is empty, it is in every bit-value
                 for b in self.dic:
                     self.dic[b][0].append(vkn)

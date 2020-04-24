@@ -1,3 +1,55 @@
+0.3.164-20200424
+- bitdic.ordered_vkdic divid kns into 0-length, 1-length, 2-length and 3-length.
+- the new bitdic.check_finish use this info to set self.done = True, when
+  1. if there is a vk with length 0: done
+  2. if there are >= 2 length==1 vks, and they sit on the same bit, but with
+     diff values( one is 0, the other has 1): done
+  3. vk length == 2: TBD
+  With these mechanism, tree-nodes reduced.
+  Prev: (see 0.3.159-20200422):
+  perf-count:
+    {   'BitDic-init': 54,
+        'TxTopKn': 15,
+        'add_clause': 54,
+        'set_txseed': 20,
+        'split_topbit': 19,
+        'subtree-call': 37,
+        'test4_finish': 38}
+  Now:
+  PS D:\lab\p3sat3> python .\solver4.py debug
+  split C001t
+  split C001t-7@0
+  split C001t-7@1t
+  split C001t-7@0-6@0
+  split C001t-7@0-6@1t
+  split C001t-7@1t-6@0
+  split C001t-7@1t-6@1t
+  C001t-7@0-6@0-5@0 is done.
+  C001t-7@0-6@0-5@1 is done.
+  C001t-7@0-6@1t-5@0 is done.
+  split C001t-7@0-6@1t-5@1t
+  C001t-7@1t-6@0-5@0 is done.
+  C001t-7@1t-6@0-5@1 is done.
+  split C001t-7@1t-6@1t-5@0
+  split C001t-7@1t-6@1t-5@1t
+  C001t-7@0-6@1t-5@1t-4@0 is done.
+  C001t-7@0-6@1t-5@1t-4@1 is done.
+  C001t-7@1t-6@1t-5@0-4@0 is done.
+  C001t-7@1t-6@1t-5@0-4@1 is done.
+  C001t-7@1t-6@1t-5@1t-4@0 is done.
+  split C001t-7@1t-6@1t-5@1t-4@1t
+  C001t-7@1t-6@1t-5@1t-4@1t-3@0 is done.
+  split C001t-7@1t-6@1t-5@1t-4@1t-3@1t
+  C001t-7@1t-6@1t-5@1t-4@1t-3@1t-2@0 is done.
+  split C001t-7@1t-6@1t-5@1t-4@1t-3@1t-2@1t
+  SAT found: 234
+  perf-count:
+  {   'BitDic-init': 36,
+      'TxTopKn': 9,
+      'add_clause': 36,
+      'set_txseed': 14,
+      'split_topbit': 13,
+      'test4_finish': 26}
 0.3.163-20200423
 - fix and refactoring/add comments in bitdic.py
 - solver4.py: use iterative, in stead of recursion - this will becomes

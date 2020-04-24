@@ -12,27 +12,12 @@ def initial_bitdic(conf_filename, seed):
     return bitdic
 
 
-def sub_tree(bdic, debug=False):
-    perf_count["subtree-call"] += 1
-    if debug:
-        bdic.visualize()
-
-    if not bdic.done:
-        bdic0, bdic1 = bdic.split_topbit(debug)
-        if type(bdic0) == type(1):
-            print(f'SAT found: {bdic0}')    # SAT!
-        else:
-            sub_tree(bdic0, debug)
-            sub_tree(bdic1, debug)
-
-
 def loop_tree(conf_filename, seed, debug=False):
     root0 = initial_bitdic(conf_filename, seed)
     if debug:
         root0.visualize()
     seed = root0.set_txseed()
     root = root0.TxTopKn(seed)
-    # sub_tree(root, debug)
     search_sat(root, debug)
 
 
@@ -40,13 +25,17 @@ def search_sat(root, debug):
     nodes = [root]
     while len(nodes) > 0:
         node = nodes.pop(0)
-        if not node.done:
+        if node.done:
+            print(f'{node.name} is done.')
+        else:
+            print(f'split {node.name}')
             node0, node1 = node.split_topbit(debug)
             # in split_topbit, the two children are tested to see
             # if 1 of them has sat. If yes, return will be
             # <sat>, None
             if type(node0) == type(1):  # see if it is sat(integer)
-                print(f'SAT found: {bdic0}')    # SAT!
+                print(f'SAT found: {node0}')    # SAT!
+                break
             else:
                 nodes.append(node0)
                 nodes.append(node1)
