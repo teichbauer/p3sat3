@@ -1,3 +1,5 @@
+0.3.165-20200424
+- traced the path of finding sat. Put in doc/path-of-sat-2.txt
 0.3.164-20200424
 - bitdic.ordered_vkdic divid kns into 0-length, 1-length, 2-length and 3-length.
 - the new bitdic.check_finish use this info to set self.done = True, when
