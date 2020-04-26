@@ -58,7 +58,9 @@ def get_rel2(sdic, finder_kname, Tx=False):
 
     # rel2 = Combo2Relation(kdic1, nov)
     if kdic != kdic1 and Tx:
-        tx = TransKlauseEngine(finder_kname, kdic[finder_kname], nov)
+        klause = kdic[finder_kname]
+        top_bit = sorted(list(klause.keys()), reverse=True)[0]
+        tx = TransKlauseEngine(finder_kname, top_bit, klause, nov)
         for kn in kdic1:
             kdic1[kn] = tx.trans_klause(kdic[kn])
     rel2 = Combo2Relation(kdic1, nov)

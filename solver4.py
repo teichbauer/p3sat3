@@ -3,6 +3,9 @@ from basics import get_sdic
 from TransKlauseEngine import make_vkdic, trans_vkdic
 import pprint
 import sys
+import time
+
+_time_count = 0
 
 
 def initial_bitdic(conf_filename, seed):
@@ -13,11 +16,13 @@ def initial_bitdic(conf_filename, seed):
 
 
 def loop_tree(conf_filename, seed, debug=False):
+    global _time_count
     root0 = initial_bitdic(conf_filename, seed)
     if debug:
         root0.visualize()
-    seed = root0.set_txseed()
-    root = root0.TxTopKn(seed)
+    seed, top_bit = root0.set_txseed()
+    root = root0.TxTopKn(seed, top_bit)
+    _time_count = time.time()
     search_sat(root, debug)
 
 
@@ -25,6 +30,8 @@ def search_sat(root, debug):
     nodes = [root]
     while len(nodes) > 0:
         node = nodes.pop(0)
+        if debug:
+            node.visualize()
         if node.done:
             print(f'{node.name} is done.')
         else:
@@ -35,10 +42,18 @@ def search_sat(root, debug):
             # <sat>, None
             if type(node0) == type(1):  # see if it is sat(integer)
                 print(f'SAT found: {node0}')    # SAT!
+                print(f'start time: {_time_count}')
+                perf_count['time-used'] = time.time() - _time_count
                 break
             else:
-                nodes.append(node0)
-                nodes.append(node1)
+                if node0.done:
+                    print(f'{node0.name} is done.')
+                else:
+                    nodes.append(node0)
+                if node1.done:
+                    print(f'{node1.name} is done.')
+                else:
+                    nodes.append(node1)
 
 
 if __name__ == '__main__':

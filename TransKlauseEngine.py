@@ -24,12 +24,12 @@ def make_vkdic(kdic, nov):
     return vkdic
 
 
-def trans_vkdic(vkd, seed_kn, nov, top):
-    tx = TransKlauseEngine(seed_kn, vkd[seed_kn], nov, top)
+def trans_vkdic(vkd, seed_kn, top_bit, nov, top):
+    tx = TransKlauseEngine(seed_kn, top_bit, vkd[seed_kn], nov, top)
     vkdic = {}
     for kn, vk in vkd.items():
         if kn == seed_kn:
-            vkdic[kn] = VKlause(kn, tx.klause, nov)
+            vkdic[kn] = VKlause(kn, tx.vklause.dic, nov)
         else:
             vkdic[kn] = VKlause(kn, tx.trans_klause(vk.dic), nov)
     return vkdic, tx
@@ -44,11 +44,13 @@ class TransKlauseEngine:
 
     def __init__(self,
                  kname,         # name of the klause
+                 top_bit,
                  base_vklause,  # inst of VKlause
                  nov,           # number of bits in value-space
                  top=True):     # transfer to top (0s) or bottom (1s)
         self.kname = kname
         self.start_vklause = base_vklause
+        self.top_bit = top_bit
         self.nov = nov
         self.top = top
         self.setup_tx_operators()
@@ -61,13 +63,30 @@ class TransKlauseEngine:
         return msg
 
     def setup_tx_operators(self):
+        # clone of vk.bits (they are in descending order from VKlause)
         bits = self.start_vklause.bits[:]
-        L = len(bits)
-        # target/left-most 3 bits(names)
-        hi_bits = [self.nov - (i + 1) for i in range(L)]
+
+        if len(bits) == 0:
+            return
+
         self.bitname_tx = {}
         self.bitvalue_tx = {}
-        bits.reverse()        # order: higher-bit -> lower-bit
+
+        # target/left-most bits(names)
+        L = len(bits)
+        hi_bits = [self.nov - (i + 1) for i in range(L)]
+
+        # be safe, in case top_bit was wrong, set it to be the highst in bits
+        if len(bits) > 0 and not self.top_bit in bits:
+            self.top_bit = bits[0]
+
+        # manually setup transfer for self.top_bit to high-bit
+        bits.remove(self.top_bit)
+        h = hi_bits.pop(0)
+        self.bitname_tx[h] = self.top_bit
+        self.bitname_tx[self.top_bit] = h
+
+        # setup transfers for the rest of the bits
         for b in bits:
             if b in hi_bits:
                 hi_bits.remove(b)
@@ -77,12 +96,19 @@ class TransKlauseEngine:
                 self.bitname_tx[b] = hi
                 self.bitname_tx[hi] = b
 
+        # now all bit:value pairs are in top/bottom positions
+        # if any vlue in the pairs is 1 / 0,
+        for b in self.start_vklause.dic:
             if self.start_vklause.dic[b] == int(self.top):
-                self.bitvalue_tx[hi] = True
-        self.klause = {}
+                post_tx_position = self.bitname_tx[b]
+                self.bitvalue_tx[post_tx_position] = True
+
+        # now tx the start_vklause to be self.vklause
+        dic = {}
         hbits = [self.nov - (i + 1) for i in range(L)]
-        for i in hbits:                      # top=True  -> bit-values: 0
-            self.klause[i] = [1, 0][self.top]  # top=False -> bit-values: 1
+        for i in hbits:                  # top=True  -> bit-values: 0
+            dic[i] = [1, 0][self.top]    # top=False -> bit-values: 1
+        self.vklause = VKlause(self.kname, dic, self.nov)
 
     def trans_klause(self, klause):
         dic = {}
@@ -156,23 +182,6 @@ class TransKlauseEngine:
         return newv
 
 
-def test(filename, seed, top):
-    vkd = make_vkdic(_kdic, 8)
-
-    new_vkd, tx = trans_vkdic(vkd, seed, 8, top)
-    vis = Visualizer(new_vkd, 8)
-    vis.output(filename, tx)
-    '''
-    if seed == 'C001':
-        vis = Visualizer(vkd, 6)
-        vis.output(filename)
-    else:
-        new_vkd = trans_vkdic(vkd, seed, top)
-        vis = Visualizer(new_vkd, 6)
-        vis.output(filename)
-    '''
-
-
 def test_bitdic(conf_file_name):
     pass
 
@@ -181,15 +190,5 @@ if __name__ == '__main__':
     x = 0
     # --------------------
     test_dic()
-    # --------------------
-    # top = True
-    # test('test-C001-top.txt', 'C001', top)
-    # test('test-C002-top.txt', 'C002', top)
-    # test('test-C003-top.txt', 'C003', top)
-
-    # top = False
-    # test('test-C003.txt', 'C003', top)
-    # test('test-C002.txt', 'C002', top)
-    # test('test-C001.txt', 'C001', top)
     # --------------------
     x = 1

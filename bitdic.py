@@ -9,6 +9,7 @@ perf_count = {
     "add_clause": 0,
     "set_txseed": 0,
     "test4_finish": 0,
+    "time-used":    0.0,
     "split_topbit": 0
 }
 
@@ -62,13 +63,15 @@ class BitDic:
         for kn in self.dic[tb][0]:
             vklause = self.vkdic[kn]
             # drop top bit, nov decrease by 1 (tp)
-            vklause.dic.pop(tb, None)
+            # vklause.dic.pop(tb, None)
+            vklause.drop_bit(tb)
             vkdic0[kn] = VKlause(kn, vklause.dic, tb)
 
         for kn in self.dic[tb][1]:
             vklause = self.vkdic[kn]
             # drop top bit, nov decrease by 1 (tp)
-            vklause.dic.pop(tb, None)
+            # vklause.dic.pop(tb, None)
+            vklause.drop_bit(tb)
             vkdic1[kn] = VKlause(kn, vklause.dic, tb)
 
         for kn in kns:
@@ -97,7 +100,7 @@ class BitDic:
 
         bdic = self.dic.copy()  # clone the bit-dic from self
         bdic.pop(tb)            # drop the top bit in bdic
-        seed = self.set_txseed(vkdic1, bdic)
+        seed, top_bit = self.set_txseed(vkdic1, bdic)
         if seed == None:
             # with vkdic empty, there is only 1 line of value,
             # the search of v is just one single line, starting with 0.
@@ -114,6 +117,8 @@ class BitDic:
             bitdic_tmp.conversion = f'{tb}@1'
             bitdic_tmp.parent = self
 
+            # the 2 returning bitdics will be visualized in solver4
+            # here is for visualize the tmp
             if debug:
                 bitdic_tmp.visualize()
 
@@ -123,7 +128,7 @@ class BitDic:
 
             if not bitdic_tmp.done:
                 # bitdic1 be tx-ed on 1 of its shortkns
-                bitdic1 = bitdic_tmp.TxTopKn(seed)
+                bitdic1 = bitdic_tmp.TxTopKn(seed, top_bit)
                 # print(f'for bitdic1t Tx-seed:{seed}')
             else:
                 bitdic1 = bitdic_tmp
@@ -204,8 +209,9 @@ class BitDic:
             bit_powers[len(d[b][0]) + len(d[b][1])] = b
         ps = sorted(list(bit_powers.keys()), reverse=True)
         # all knames in both 0-kns and 1-kns
-        kns = d[bit_powers[ps[0]]][0] + d[bit_powers[ps[0]]][1]
-        return set(kns)
+        best_bit = bit_powers[ps[0]]
+        kns = d[best_bit][0] + d[best_bit][1]
+        return set(kns), best_bit
 
     def set_txseed(self, vkdic=None, bdic=None):
         ''' pick/return a kn as seed, in vkdic with shortest dic, and
@@ -233,17 +239,18 @@ class BitDic:
         if len(lst) == 0:
             x = 1
             return None
-        popular_kns = self.most_popular(bdic)
+        popular_kns, top_bit = self.most_popular(bdic)
         for kn in lst:
             if kn in popular_kns:
-                return kn
-        return lst[0]
+                return kn, top_bit
+        return lst[0], top_bit
 
-    def TxTopKn(self, tx_seed):
+    def TxTopKn(self, tx_seed, top_bit):
         perf_count["TxTopKn"] += 1
         new_vkdic, tx = trans_vkdic(
             self.vkdic,     # tx all vkdic members
             tx_seed,        # seed-kn for Tx
+            top_bit,        # this bit from seed-klause will turn to top-bit
             self.nov,       # nov remains the same
             True)           # Tx-to-top-position: True
         bitdic = BitDic(tx_seed, self.name + 't', new_vkdic, self.nov)

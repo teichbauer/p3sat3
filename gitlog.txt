@@ -1,3 +1,12 @@
+0.3.166-20200425
+- set up time-used in perf-count, for performance measurement
+- when select most popular bit's kname, also return the bit. This will be then
+  used in TxTopKn for making Tx with top-bit targeting the high bit
+- TransKlauseEngine now accepting top_bit in its constructor. 
+  Its bitname_tx will make sure top-bit from vklause (to be Tx-ed) be Tx-ed to
+  the highst bit.
+- made doc/path-to-sat-2-tree.txt for better understanding/analysis.
+- bug: C001(SAT:234)->C001t(SAT:238)->7@1t let SAT disappeared!
 0.3.165-20200424
 - traced the path of finding sat. Put in doc/path-of-sat-2.txt
 0.3.164-20200424
@@ -7,17 +16,7 @@
   2. if there are >= 2 length==1 vks, and they sit on the same bit, but with
      diff values( one is 0, the other has 1): done
   3. vk length == 2: TBD
-  With these mechanism, tree-nodes reduced.
-  Prev: (see 0.3.159-20200422):
-  perf-count:
-    {   'BitDic-init': 54,
-        'TxTopKn': 15,
-        'add_clause': 54,
-        'set_txseed': 20,
-        'split_topbit': 19,
-        'subtree-call': 37,
-        'test4_finish': 38}
-  Now:
+  With these mechanism, tree-nodes reduced.  Now:
   PS D:\lab\p3sat3> python .\solver4.py debug
   split C001t
   split C001t-7@0
@@ -52,6 +51,16 @@
       'set_txseed': 14,
       'split_topbit': 13,
       'test4_finish': 26}
+  -----------------------------
+  Prev: (see 0.3.159-20200422):
+  perf-count:
+    {   'BitDic-init': 54,
+        'TxTopKn': 15,
+        'add_clause': 54,
+        'set_txseed': 20,
+        'split_topbit': 19,
+        'subtree-call': 37,
+        'test4_finish': 38}
 
 0.3.163-20200423
 - fix and refactoring/add comments in bitdic.py
