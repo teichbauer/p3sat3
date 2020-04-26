@@ -1,3 +1,9 @@
+0.3.167-20200426
+- TransKlauseEngine fix: bitname_tx was dict, this caused trouble
+  for {5:6, 6:5} adding 4<->5 {5:6, 6:4, 4:5, 5:4} will not happen, because
+  the entry 5:4 will over-write 5:6, so it becomes {6:5, 4:5, 5:4}
+  missing 5:6. Fix: not using dict, but list of tuple:
+  [(4,5),(5,4),(5,6),(6,5)] all exchanges are contained without over-writing.
 0.3.166-20200425
 - set up time-used in perf-count, for performance measurement
 - when select most popular bit's kname, also return the bit. This will be then
