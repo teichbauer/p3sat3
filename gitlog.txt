@@ -1,3 +1,7 @@
+0.3.168-20200427
+- fix/recode TransKlauseEngine: name_txs will be a list of tuples of
+  [(<tart-bit>,<target-bit>,..)] so it contains only 3 entries.
+- still debuging.
 0.3.167-20200426
 - TransKlauseEngine fix: bitname_tx was dict, this caused trouble
   for {5:6, 6:5} adding 4<->5 {5:6, 6:4, 4:5, 5:4} will not happen, because

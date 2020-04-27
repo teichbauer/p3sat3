@@ -17,6 +17,18 @@ test_dic = {
 }
 
 
+def get_bit(val, bit):
+    return (val >> bit) & 1
+
+
+def construct_value_from_dict(d):
+    value = 0
+    for b, v in d.items():
+        if v == 1:
+            value |= (1 << b)
+    return value
+
+
 def make_vkdic(kdic, nov):
     vkdic = {}
     for kn, klause in kdic.items():
@@ -64,23 +76,25 @@ class TransKlauseEngine:
         msg += '-'*60
         return msg
 
-    def _find_tx_tuple(self, start_bit, lst=None):
+    def _find_tx_tuple(self, head_or_tail, bit, lst=None):
         ''' find/return the tuple in self.name_txs, with given starting bit
             internal use only
             '''
+        # index = (0,1) for head_or_tail = (True, False)
+        index = int(not head_or_tail)
+
         if lst == None:
             search_lst = self.name_txs
         else:
             search_lst = lst
         for t in search_lst:
-            if t[0] == start_bit:
+            if t[index] == bit:
                 return t
         if lst == None:  # use self.name_txs but not found? can't be
-            raise(f"find_tx_tuple: ({start_bit},*) not in tuple-lst")
+            raise(f"find_tx_tuple: ({bit},*) not in tuple-lst")
         return None
 
     def setup_tx_operators(self):
-
         # clone of vk.bits (they are in descending order from VKlause)
         bits = self.start_vklause.bits[:]
         if len(bits) == 0:
@@ -97,7 +111,7 @@ class TransKlauseEngine:
         # manually setup transfer for self.top_bit to high-bit
         bits.remove(self.top_bit)
         h = hi_bits.pop(0)
-        self.name_txs.append((h, self.top_bit))
+        # self.name_txs.append((h, self.top_bit))
         self.name_txs.append((self.top_bit, h))
 
         # setup transfers for the rest of the bits
@@ -107,14 +121,14 @@ class TransKlauseEngine:
                 hi = b
             else:
                 hi = hi_bits.pop(0)
-                self.name_txs.append((hi, b))
+                # self.name_txs.append((hi, b))
                 self.name_txs.append((b, hi))
 
         # now all bit:value pairs are in top/bottom positions
         # if any vlue in the pairs is 1 / 0,
         for b in self.start_vklause.dic:
             if self.start_vklause.dic[b] == int(self.top):
-                txt = self._find_tx_tuple(b)
+                txt = self._find_tx_tuple(True, b)  # head: True
                 post_tx_position = txt[1]
                 self.value_txs.append(post_tx_position)
 
@@ -128,14 +142,20 @@ class TransKlauseEngine:
     def trans_klause(self, klause):
         dic = {}
         ntxs = self.name_txs.copy()
-        for b, v in klause.items():
-            t = self._find_tx_tuple(b, ntxs)
+        bs = list(klause.keys())
+        while len(bs) > 0:
+            b = bs.pop(0)
+            t = self._find_tx_tuple(True, b, ntxs)  # head: True
             if t:
                 ntxs.remove(t)  # drop t from ntxs
-                new_bit = t[1]
-                dic[new_bit] = v
+                t0, t1 = t      # destruct t into t0, t1, b == t0
+                dic[t1] = klause[b]
+                # the reverse side of the exchange
+                if t1 in klause:
+                    dic[b] = klause[t1]
             else:
-                dic[b] = v
+                dic[b] = klause[b]
+
         for b, v in dic.items():
             if b in self.value_txs:
                 dic[b] = int(not(v))
@@ -145,36 +165,47 @@ class TransKlauseEngine:
         vdic = {}
         txn = self.name_txs.copy()
         for i in range(self.nov):
-            bv = (v >> i) % 2  # i-th bit value
-            t = self._find_tx_tuple(i, txn)
+            bv = get_bit(v, i)  # i-th bit value in v
+            t = self._find_tx_tuple(True, i, txn)   # head: True
             if t:
-                txn.remove(t)
-                j = t[1]
-                if j in self.value_txs:
-                    vdic[j] = int(not bv)
+                txn.remove(t)   # drop t from txn
+                t0, t1 = t      # t[0] == i
+                if t1 in self.value_txs:
+                    vdic[t1] = int(not bv)
                 else:
-                    vdic[j] = bv
+                    vdic[t1] = bv
+                # the reverse side of the exchange
+                nv = get_bit(v, t1)
+                if i in self.value_txs:
+                    vdic[i] = int(not nv)
+                else:
+                    vdic[i] = nv
             else:
                 vdic[i] = bv
-        newv = 0
-        for b, v in vdic.items():
-            if v == 1:
-                newv |= (1 << b)
-        return newv
+        return construct_value_from_dict(vdic)
 
     def reverse_klause(self, klause):
         dic = {}
         txn = self.name_txs.copy()
-        for b, v in klause.items():
+        bs = list(klause.keys())
+        while len(bs) > 0:
+            b = bs.pop(0)
             if b in self.value_txs:
-                nv = int(not v)
+                nv = int(not klause[b])
             else:
-                nv = v
-            t = self._find_tx_tuple(b, txn)
+                nv = klause[b]
+            t = self._find_tx_tuple(False, b, txn)  # head: False, find tail
             if t:
                 txn.remove(t)
-                nb = t[1]
-                dic[nb] = nv
+                t0, t1 = t  # destruct t, b == t1
+                dic[t0] = nv
+                # the reverse side of the exchange
+                if t0 in bs:
+                    bs.remove(t0)
+                    if t0 in self.value_txs:
+                        dic[t1] = int(not klause[t0])
+                    else:
+                        dic[t1] = klause[t0]
             else:
                 dic[b] = nv
         return dic
@@ -183,21 +214,22 @@ class TransKlauseEngine:
         vdic = {}
         txn = self.name_txs.copy()
         for i in range(self.nov):
-            bv = (v >> i) % 2
+            bv = get_bit(v, i)
             if i in self.value_txs:
                 bv = int(not bv)
-            t = self._find_tx_tuple(i, txn)
+            t = self._find_tx_tuple(False, i, txn)  # head:False, find tail==i
             if t:
+                t0, t1 = t      # destruct t into t0 t1, t1 == i
                 txn.remove(t)
-                j = t[1]
-                vdic[j] = bv
+                vdic[t0] = bv
+                # the reverse side of the exchange
+                bv = get_bit(v, t0)
+                if t0 in self.value_txs:
+                    bv = int(not t0)
+                vdic[t1] = bv
             else:
                 vdic[i] = bv
-        newv = 0
-        for b, v in vdic.items():
-            if v == 1:
-                newv |= (1 << b)
-        return newv
+        return construct_value_from_dict(vdic)
 
 
 def test_bitdic(conf_file_name):
@@ -205,7 +237,6 @@ def test_bitdic(conf_file_name):
 
 
 if __name__ == '__main__':
-    x = 0
     # --------------------
     test_dic()
     # --------------------
