@@ -1,6 +1,6 @@
 from bitdic import make_initial_bitdic, BitDic, perf_count
 from basics import get_sdic
-from TransKlauseEngine import make_vkdic
+from TransKlauseEngine import make_vkdic, test_tx
 import pprint
 import sys
 import time
@@ -23,10 +23,8 @@ def loop_tree(conf_filename, seed, debug=False):
     seed, top_bit = root0.set_txseed()
     root = root0.TxTopKn(seed, top_bit)
 
-    tx = root.conversion
-    c1vs0 = [i for i in range(32)]
-    c1vs1 = tx.trans_values(c1vs0)
-    c1vs2 = tx.reverse_values(c1vs1)
+    # tx = root.conversion
+    # test_tx(tx, root0.vkdic)
 
     _time_count = time.time()
     search_sat(root, debug)

@@ -38,12 +38,20 @@ def flip_bit(val, bit):
     return v1
 
 
-def trade_bits(val, bit_tuple):  # bit1, bit2):
+def trade_bits(val, bit_tuple):
     v1 = get_bit(val, bit_tuple[0])         # read bit-1 -> v1 (0 or 1)
     v2 = get_bit(val, bit_tuple[1])         # read bit-2 -> v2 (0 or 1)
     val1 = set_bit(val,  bit_tuple[1], v1)  # set v1 (0 or 1), to bit-2
     val2 = set_bit(val1, bit_tuple[0], v2)  # set v2 (0 or 1), to bit-1
     return val2
+
+
+def trade_lst_elements(lst, pos_tuple):
+    lst1 = lst[:]
+    p0, p1 = pos_tuple
+    lst1[p0] = lst[p1]
+    lst1[p1] = lst[p0]
+    return lst1
 
 
 def construct_value_from_dict(d):
@@ -61,15 +69,32 @@ def make_vkdic(kdic, nov):
     return vkdic
 
 
-# def trans_vkdic(vkd, seed_kn, top_bit, nov, top):
-#     tx = TransKlauseEngine(seed_kn, top_bit, vkd[seed_kn], nov, top)
-#     vkdic = {}
-#     for kn, vk in vkd.items():
-#         if kn == seed_kn:
-#             vkdic[kn] = VKlause(kn, tx.vklause.dic, nov)
-#         else:
-#             vkdic[kn] = VKlause(kn, tx.trans_klause(vk.dic), nov)
-#     return vkdic, tx
+def test_tx(tx, vkdic):
+    kns = sorted(list(vkdic.keys()))
+    nvkdic = tx.trans_vkdic(vkdic)
+
+    vdic = {}
+    vhit_dic = {}
+    N = 2 ** tx.nov
+    for v in range(N):
+        nv = tx.trans_value(v)
+
+        hset0 = set([])
+        for kn, vk in vkdic.items():
+            if vk.hit(v):
+                hset0.add(kn)
+
+        hset = set([])
+        for kn, vk in nvkdic.items():
+            if vk.hit(nv):
+                hset.add(kn)
+
+        if hset0 != hset:
+            debug = 1
+            return False
+    return True
+
+    new_vkdic = tx.trans_vkdic(vkdic)
 
 
 class TransKlauseEngine:
@@ -165,38 +190,24 @@ class TransKlauseEngine:
         self.vklause = VKlause(self.kname, dic, self.nov)
 
     def trans_klause(self, vklause):
-        klause = vklause.dic
-        dic = {}
-        ntxs = self.name_txs.copy()
+        klause = vklause.dic.copy()
         bs = list(klause.keys())
-
-        while len(bs) > 0:
-            b = bs.pop(0)
-            t = self._find_tx_tuple(True, b, ntxs)  # head: True
-            if t:
-                ntxs.remove(t)  # drop t from ntxs
-                t0, t1 = t      # destruct t into t0, t1, b == t0
-                dic[t1] = klause[b]
-                # the reverse side of the exchange
-                if t1 in bs:
-                    bs.remove(t1)
-                    dic[t0] = klause[t1]
+        lst = []
+        for i in range(self.nov):
+            if i in bs:
+                lst.append(klause[i])
             else:
-                t = self._find_tx_tuple(False, b, ntxs)  # head: False
-                if t:
-                    ntxs.remove(t)  # drop t from ntxs
-                    t0, t1 = t      # destruct t into t0, t1, b == t1
-                    dic[t0] = klause[t1]
-                    if t0 in bs:
-                        bs.remove(t0)
-                        dic[t1] = klause[t0]
-                else:
-                    dic[b] = klause[b]
-
-        for b, v in dic.items():
-            if b in self.value_txs:
-                dic[b] = int(not(v))
-        return VKlause(self.kname, dic, self.nov)
+                lst.append(None)
+        for t in self.name_txs:
+            lst = trade_lst_elements(lst, t)
+        for flip in self.value_txs:
+            if lst[flip] != None:
+                lst[flip] = int(not lst[flip])
+        dic = {}
+        for i, e in enumerate(lst):
+            if e != None:
+                dic[i] = e
+        return VKlause(vklause.kname, dic, self.nov)
 
     def trans_value(self, v):
         new_v = v
@@ -207,7 +218,7 @@ class TransKlauseEngine:
             new_v = flip_bit(new_v, b)
         return new_v
 
-    def trans_klauses(self, vkdic):
+    def trans_vkdic(self, vkdic):
         vdic = {}
         for kn, vk in vkdic.items():
             if kn == self.kname:
@@ -238,39 +249,6 @@ class TransKlauseEngine:
         for v in vs:
             res.append(self.trans_value(v))
         return res
-
-    # def trans_value(self, v):
-    #     new_v = v
-    #     txn = self.name_txs.copy()
-    #     from_pos = [i for i in range(self.nov)]
-    #     to_pos = from_pos[:]
-
-    #     while len(txn) > 0:
-    #         t = txn.pop(0)
-    #         t0, t1 = t
-    #         from_pos.remove(t0)
-    #         to_pos.remove(t1)
-    #         set_bit(new_v, t1, get_bit(v, t0)
-    #         chain_t=self._find_tx_tuple(True, t1, txn)
-    #         if not chain_t:
-    #             from_pos.remove(t1)
-    #             to_posremove(t0)
-    #             set_bit(new_v, t0, get_bit(v, t1))
-
-    #     i=0
-    #     while i < len(from_pos):
-    #         if from_pos[i] in to_pos:
-    #             from_pos.remove(i)
-    #             to_pos.remove(i)
-    #             set_bit(new_v, i, get_bit(v, i))
-    #         else:
-    #             i += 1
-    #     if len(from_pos) > 0:
-    #         fbit=from_pos.pop(0)
-    #         tbit=to_pos.pop(0)
-    #         set_bit(new_v, tbit, get_bit(, fbit))
-    #         if len(from_pos) > 0 or len(to_pos) > 0:
-    #             raise("weirdo")
 
 
 def test_bitdic(conf_file_name):

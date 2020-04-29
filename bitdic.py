@@ -254,14 +254,8 @@ class BitDic:
             self.nov,
             True)                   # trans to the top-position (v == 0)
 
-        new_vkdic = tx.trans_klauses(self.vkdic)
+        new_vkdic = tx.trans_vkdic(self.vkdic)
 
-        # new_vkdic, tx = trans_vkdic(
-        #     self.vkdic,     # tx all vkdic members
-        #     tx_seed,        # seed-kn for Tx
-        #     top_bit,        # this bit from seed-klause will turn to top-bit
-        #     self.nov,       # nov remains the same
-        #     True)           # Tx-to-top-position: True
         bitdic = BitDic(tx_seed, self.name + 't', new_vkdic, self.nov)
         bitdic.conversion = tx
         bitdic.parent = self

@@ -1,3 +1,8 @@
+0.3.171-20200428
+- another redesign or re-figuring out how trans-klause and trans-vlue works.
+  Have spent 3+ days on these issues, and now I have a new version, and
+  it seems to work - at long last.
+- big changes in TransKlauseEngine
 0.3.170-20200428
 - fix in TransKlauseEngine. Now C001t is correct.
 0.3.169-20200428
