@@ -1,4 +1,49 @@
-0.3.171-20200428
+0.3.173-20200428
+- all config files put under ./configs/
+- get some config files generated from solvertester:
+  config12_60.json   -> ok, solvered in 0.094 < 0.17 by solver0
+  config20_80.json   -> failed. still bugs?
+0.3.172-20200429
+- performance:
+  with solver0 (brutal force under solvertest/solver0): 0.0321
+  my solver4 used 0.0156 - it is an improvement.
+  Also, the bitDic-init was now 33, from last time's 36.
+  Need to now use cnf-generator to have more test  compare.
+  -----------------------------------------------------------
+  split C001t
+  split C001t-7@0
+  split C001t-7@1t
+  split C001t-7@0-6@0
+  C001t-7@0-6@0-5@0 is done.
+  C001t-7@0-6@0-5@1 is done.
+  split C001t-7@0-6@1t
+  C001t-7@0-6@1t-5@0 is done.
+  C001t-7@0-6@1t-5@1 is done.
+  split C001t-7@1t-6@0
+  C001t-7@1t-6@0-5@0 is done.
+  C001t-7@1t-6@0-5@1 is done.
+  split C001t-7@1t-6@1t
+  C001t-7@1t-6@1t-5@0 is done.
+  split C001t-7@1t-6@1t-5@1t
+  C001t-7@1t-6@1t-5@1t-4@0 is done.
+  split C001t-7@1t-6@1t-5@1t-4@1t
+  split C001t-7@1t-6@1t-5@1t-4@1t-3@0
+  C001t-7@1t-6@1t-5@1t-4@1t-3@0-2@0 is done.
+  split C001t-7@1t-6@1t-5@1t-4@1t-3@1t
+  C001t-7@1t-6@1t-5@1t-4@1t-3@1t-2@0 is done.
+  C001t-7@1t-6@1t-5@1t-4@1t-3@1t-2@1 is done.
+  split C001t-7@1t-6@1t-5@1t-4@1t-3@0-2@1t
+  SAT found: 234
+  start time: 1588124077.2315154
+  perf-count:
+  {   'BitDic-init': 33,
+      'TxTopKn': 8,
+      'add_clause': 33,
+      'set_txseed': 13,
+      'split_topbit': 12,
+      'test4_finish': 24,
+      'time-used': 0.01562809944152832}
+`0.3.171-20200428
 - another redesign or re-figuring out how trans-klause and trans-vlue works.
   Have spent 3+ days on these issues, and now I have a new version, and
   it seems to work - at long last.

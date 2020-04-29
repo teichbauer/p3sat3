@@ -62,8 +62,11 @@ def search_sat(root, debug):
 
 if __name__ == '__main__':
     pp = pprint.PrettyPrinter(indent=4)
-    debug = len(sys.argv) > 1
-    # debug = False
-    loop_tree('config1.json', 'C001', debug)
+    debug = False
+    if len(sys.argv) == 1:
+        config_file_name = 'config1.json'
+    else:
+        config_file_name = sys.argv[1]
+    loop_tree('./configs/' + config_file_name, 'C001', debug)
     print('perf-count: ')
     pp.pprint(perf_count)
