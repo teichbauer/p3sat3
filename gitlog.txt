@@ -1,3 +1,13 @@
+0.3.174-20200429
+- working on config20_80.json which has a search/value-space of 1048575
+  solver4.py spent 0.266 secs where solver0 spent 3.5+ secs
+  But the SAT found 725519 is not correct 
+  TBD: I have to debug it.
+- Vklause.drop_bit removed. the usages in bitdic as not correct, andnow
+  without the .drop_bit, bitdic works correctly.
+- TransKlauseEngine fixes: in ._find_tx_tuple and .setup_tx_operators (now 
+  renamed to .setup_tx)
+- fix in BitDic.set_txseed
 0.3.173-20200428
 - all config files put under ./configs/
 - get some config files generated from solvertester:

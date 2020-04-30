@@ -13,13 +13,6 @@ class VKlause:
         self.nob = len(self.bits)             # 1, 2 or 3
         self.set_filter_and_mask()
 
-    def drop_bit(self, bit):
-        if bit in self.dic:
-            self.bits.remove(bit)
-            self.nob -= 1
-            self.dic.pop(bit)
-            self.set_filter_and_mask()
-
     def set_filter_and_mask(self):
         ''' For the example klause {7:1, 5:0, 2:1}
                               BITS:   7  6  5  4  3  2  1  0

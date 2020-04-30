@@ -8,16 +8,16 @@ import time
 _time_count = 0
 
 
-def initial_bitdic(conf_filename, seed):
+def initial_bitdic(conf_filename, seed='C001'):
     sdic = get_sdic(conf_filename)
     vkdic = make_vkdic(sdic['kdic'], sdic['nov'])
     bitdic = BitDic(seed, seed, vkdic, sdic['nov'])
     return bitdic
 
 
-def loop_tree(conf_filename, seed, debug=False):
+def loop_tree(conf_filename, debug=False):
     global _time_count
-    root0 = initial_bitdic(conf_filename, seed)
+    root0 = initial_bitdic(conf_filename)
     if debug:
         root0.visualize()
     seed, top_bit = root0.set_txseed()
@@ -46,7 +46,7 @@ def search_sat(root, debug):
             # <sat>, None
             if type(node0) == type(1):  # see if it is sat(integer)
                 print(f'SAT found: {node0}')    # SAT!
-                print(f'start time: {_time_count}')
+                # print(f'start time: {_time_count}')
                 perf_count['time-used'] = time.time() - _time_count
                 break
             else:
@@ -62,11 +62,12 @@ def search_sat(root, debug):
 
 if __name__ == '__main__':
     pp = pprint.PrettyPrinter(indent=4)
-    debug = False
+    debug = len(sys.argv) == 3
     if len(sys.argv) == 1:
-        config_file_name = 'config1.json'
+        config_file_name = 'config20_80.json'
+        # config_file_name = 'config1.json'
     else:
         config_file_name = sys.argv[1]
-    loop_tree('./configs/' + config_file_name, 'C001', debug)
+    loop_tree('./configs/' + config_file_name, debug)
     print('perf-count: ')
     pp.pprint(perf_count)

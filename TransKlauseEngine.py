@@ -117,7 +117,7 @@ class TransKlauseEngine:
         self.top = top
         self.name_txs = []   # list of exchange-tuple(pairs)
         self.value_txs = []  # list of post tx value-flip
-        self.setup_tx_operators()
+        self.setup_tx()
 
     def output(self):
         msg = self.kname + ': '+str(self.start_vklause.dic) + ', '
@@ -134,17 +134,16 @@ class TransKlauseEngine:
         index = int(not head_or_tail)
 
         if lst == None:
-            search_lst = self.name_txs
-        else:
-            search_lst = lst
-        for t in search_lst:
+            lst = self.name_txs
+
+        for t in lst:
             if t[index] == bit:
                 return t
         if lst == None:  # use self.name_txs but not found? can't be
             raise(f"find_tx_tuple: ({bit},*) not in tuple-lst")
         return None
 
-    def setup_tx_operators(self):
+    def setup_tx(self):
         # clone of vk.bits (they are in descending order from VKlause)
         bits = self.start_vklause.bits[:]
         if len(bits) == 0:
@@ -166,21 +165,23 @@ class TransKlauseEngine:
 
         # setup transfers for the rest of the bits
         for b in bits:
-            if b in hi_bits:
-                hi_bits.remove(b)
-                hi = b
+            if b in hi_bits:       # b already in high-pos, no transfer
+                hi_bits.remove(b)  # of bit needed - for this bit
             else:
                 hi = hi_bits.pop(0)
                 # self.name_txs.append((hi, b))
                 self.name_txs.append((b, hi))
 
         # now all bit:value pairs are in top/bottom positions
-        # if any vlue in the pairs is 1 / 0,
+        # they must all be 0 (self.top: True) or 1 (self.top: False)
         for b in self.start_vklause.dic:
-            if self.start_vklause.dic[b] == int(self.top):
-                txt = self._find_tx_tuple(True, b)  # head: True
-                post_tx_position = txt[1]
-                self.value_txs.append(post_tx_position)
+            if self.start_vklause.dic[b] == int(self.top):  # 1
+                t = self._find_tx_tuple(True, b)  # head: True
+                if t:
+                    post_tx_position = t[1]
+                    self.value_txs.append(post_tx_position)
+                else:  # b not in any bit-tx, it remains in right position
+                    self.value_txs.append(b)  # but b's value needs flip
 
         # now tx the start_vklause to be self.vklause
         dic = {}

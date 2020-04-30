@@ -61,24 +61,23 @@ class BitDic:
         kns = list(self.vkdic.keys())
 
         for kn in self.dic[tb][0]:
-            vklause = self.vkdic[kn]
-            # drop top bit, nov decrease by 1 (tp)
-            # vklause.dic.pop(tb, None)
-            vklause.drop_bit(tb)
-            vkdic0[kn] = VKlause(kn, vklause.dic, tb)
+            kdic = self.vkdic[kn].dic.copy()  # clone the vklause.dic
+            # on the clone, drop top bit, nov decrease by 1 (tp)
+            if tb in kdic:
+                kdic.pop(tb)
+            vkdic0[kn] = VKlause(kn, kdic, tb)
 
         for kn in self.dic[tb][1]:
-            vklause = self.vkdic[kn]
-            # drop top bit, nov decrease by 1 (tp)
-            # vklause.dic.pop(tb, None)
-            vklause.drop_bit(tb)
-            vkdic1[kn] = VKlause(kn, vklause.dic, tb)
+            kdic = self.vkdic[kn].dic.copy()  # clone the vklause.dic
+            # n the clone, drop top bit, nov decrease by 1 (tp)
+            if tb in kdic:
+                kdic.pop(tb)
+            vkdic1[kn] = VKlause(kn, kdic, tb)
 
         for kn in kns:
             if (kn not in vkdic0) and (kn not in vkdic1):
-                vklause = self.vkdic[kn]
                 # no need to drop top bit, they don't have it.
-                vkdic_mix[kn] = VKlause(kn, vklause.dic, tb)
+                vkdic_mix[kn] = VKlause(kn, self.vkdic[kn].dic, tb)
 
         vkdic0.update(vkdic_mix)  # add mix-dic to 0-dic
         vkdic1.update(vkdic_mix)  # add mix-dic to 1-dic
@@ -238,7 +237,7 @@ class BitDic:
                     lst.append(kn)
         if len(lst) == 0:
             x = 1
-            return None
+            return None, None
         popular_kns, top_bit = self.most_popular(bdic)
         for kn in lst:
             if kn in popular_kns:
