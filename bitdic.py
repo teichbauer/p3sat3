@@ -1,17 +1,8 @@
-from basics import get_sdic
+from basics import get_sdic, get_sats
 from vklause import VKlause
 from visualizer import Visualizer
-from TransKlauseEngine import make_vkdic, TransKlauseEngine
-
-perf_count = {
-    "BitDic-init": 0,
-    "TxTopKn": 0,
-    "add_clause": 0,
-    "set_txseed": 0,
-    "test4_finish": 0,
-    "time-used":    0.0,
-    "split_topbit": 0
-}
+from TransKlauseEngine import TransKlauseEngine
+from solver4 import SATS, perf_count
 
 
 class BitDic:
@@ -82,6 +73,17 @@ class BitDic:
         vkdic0.update(vkdic_mix)  # add mix-dic to 0-dic
         vkdic1.update(vkdic_mix)  # add mix-dic to 1-dic
 
+        N1 = 2 ** tb
+        if len(vkdic0) == 0:
+            vs = [v for v in range(N1)]
+            sats = get_sats(self, vs)
+            return sats, None
+
+        if len(vkdic1) == 0:
+            vs = [N1 + v for v in range(N1)]
+            sats = get_sats(self, vs)
+            return sats, None
+
         bitdic0 = BitDic(
             self.seed_name,
             self.name + f'-{tb}@0',
@@ -99,6 +101,11 @@ class BitDic:
 
         bdic = self.dic.copy()  # clone the bit-dic from self
         bdic.pop(tb)            # drop the top bit in bdic
+
+        m = 'C001t-19@1t-18@1t-17@1t-16@1t-15@1t-14@1t-13@1t-12@0-11@1t-10@1t-9@1t-8@1t-7@1t-6@1t-5@1t'
+        if self.name == m:
+            x = 1
+
         seed, top_bit = self.set_txseed(vkdic1, bdic)
         if seed == None:
             # with vkdic empty, there is only 1 line of value,
@@ -296,25 +303,5 @@ class BitDic:
         self.vis.output(self)
 
 
-def make_initial_bitdic(conf_filename):
-    sdic = get_sdic(conf_filename)
-    vkdic = make_vkdic(sdic['kdic'], sdic['nov'])
-    bitdic = BitDic("C001", "Org", vkdic, sdic['nov'])
-    return bitdic
-
-
-def test():
-    bdic = make_initial_bitdic('config1.json')
-    bdic.visualize()
-
-    # split into 2: bdic0(bit-7 = 0) / bdic1(bit-7 = 1)
-    # Tx (bdic1) -> bdic1t
-    bdic0, bdic1, bdic1t = bdic.split_topbit()
-    bdic0.visualize()
-    bdic1.visualize()
-    bdic1t.visualize()
-
-
 if __name__ == '__main__':
-    test()
     x = 1

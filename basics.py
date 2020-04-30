@@ -66,3 +66,65 @@ def fill_2set(src, lst2):  # Complexity: O(m**2)
 def get_sdic(filename):
     sdic = eval(open(filename).read())
     return sdic
+
+# ============================================
+
+
+def get_bit(val, bit):
+    return (val >> bit) & 1
+
+
+def set_bit(val, bit_index, new_bit_value):
+    """ Set the bit_index (0-based) bit of val to x (1 or 0)
+        and return the new val.
+        """
+    mask = 1 << bit_index  # mask - integer with just hte chosen bit set.
+    val &= ~mask           # Clear the bit indicated by the mask (if x == 0)
+    if new_bit_value:
+        val |= mask        # If x was True, set the bit indicated by the mask.
+    return val             # Return the result, we're done.
+
+
+def flip_bit(val, bit):
+    v0 = get_bit(val, bit)
+    v1 = set_bit(val, bit, int(not v0))
+    return v1
+
+
+def trade_bits(val, bit_tuple):
+    v1 = get_bit(val, bit_tuple[0])         # read bit-1 -> v1 (0 or 1)
+    v2 = get_bit(val, bit_tuple[1])         # read bit-2 -> v2 (0 or 1)
+    val1 = set_bit(val,  bit_tuple[1], v1)  # set v1 (0 or 1), to bit-2
+    val2 = set_bit(val1, bit_tuple[0], v2)  # set v2 (0 or 1), to bit-1
+    return val2
+
+
+def trade_lst_elements(lst, pos_tuple):
+    lst1 = lst[:]
+    p0, p1 = pos_tuple
+    lst1[p0] = lst[p1]
+    lst1[p1] = lst[p0]
+    return lst1
+
+
+# =================================================
+
+
+def get_sats(start_node, vs):
+    node = start_node
+    nvs = vs[:]
+    # with vkdic empty, there is only 1 line of value, the search of v
+    # is just one single line, starting with 0. so v = 0
+    while node:
+        if node.conversion == None:  # reached root-seed
+            break
+        if type(node.conversion) == type(''):
+            splt = node.conversion.split('@')
+            shift, bitvalue = int(splt[0]), int(splt[1])
+            if bitvalue == 1:
+                nvs = [v + (1 << shift) for v in nvs]
+        else:
+            tx = node.conversion
+            nvs = [tx.reverse_value(v) for v innvs]
+        node = node.parent
+    return nvs

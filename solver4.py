@@ -1,11 +1,29 @@
-from bitdic import make_initial_bitdic, BitDic, perf_count
+from bitdic import BitDic, perf_count
 from basics import get_sdic
-from TransKlauseEngine import make_vkdic, test_tx
 import pprint
 import sys
 import time
 
+SATS = []
+
+perf_count = {
+    "BitDic-init": 0,
+    "TxTopKn": 0,
+    "add_clause": 0,
+    "set_txseed": 0,
+    "test4_finish": 0,
+    "time-used":    0.0,
+    "split_topbit": 0
+}
+
 _time_count = 0
+
+
+def make_vkdic(kdic, nov):
+    vkdic = {}
+    for kn, klause in kdic.items():
+        vkdic[kn] = VKlause(kn, klause, nov)
+    return vkdic
 
 
 def initial_bitdic(conf_filename, seed='C001'):
@@ -23,7 +41,7 @@ def loop_tree(conf_filename, debug=False):
     seed, top_bit = root0.set_txseed()
     root = root0.TxTopKn(seed, top_bit)
 
-    # tx = root.conversion
+    tx = root.conversion
     # test_tx(tx, root0.vkdic)
 
     _time_count = time.time()

@@ -1,3 +1,7 @@
+0.3.175-20200430
+- cleaned up structurally
+- intro of dealing with when vkdic becomes empty -> collect sats!
+  need to complete and test. Tomorrow. It's over 1:00AM of tomorrow now.
 0.3.174-20200429
 - working on config20_80.json which has a search/value-space of 1048575
   solver4.py spent 0.266 secs where solver0 spent 3.5+ secs

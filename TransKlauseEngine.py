@@ -1,100 +1,6 @@
 from visualizer import Visualizer
 from vklause import VKlause
-
-# test data with nov = 6
-_kdic = {
-    'C001': {5: 1, 4: 1, 3: 1},
-    'C002': {2: 0, 1: 1, 0: 0},
-    'C003': {5: 0, 4: 0, 2: 1}
-}
-
-test_dic = {
-    'C1': {
-        'C001': {5: 1, 4: 1, 3: 1},
-        'C002': {2: 0, 1: 1, 0: 0},
-        'C003': {5: 0, 4: 0, 2: 1}
-    },
-}
-
-
-def get_bit(val, bit):
-    return (val >> bit) & 1
-
-
-def set_bit(val, bit_index, new_bit_value):
-    """ Set the bit_index (0-based) bit of val to x (1 or 0)
-        and return the new val.
-        """
-    mask = 1 << bit_index  # mask - integer with just hte chosen bit set.
-    val &= ~mask           # Clear the bit indicated by the mask (if x == 0)
-    if new_bit_value:
-        val |= mask        # If x was True, set the bit indicated by the mask.
-    return val             # Return the result, we're done.
-
-
-def flip_bit(val, bit):
-    v0 = get_bit(val, bit)
-    v1 = set_bit(val, bit, int(not v0))
-    return v1
-
-
-def trade_bits(val, bit_tuple):
-    v1 = get_bit(val, bit_tuple[0])         # read bit-1 -> v1 (0 or 1)
-    v2 = get_bit(val, bit_tuple[1])         # read bit-2 -> v2 (0 or 1)
-    val1 = set_bit(val,  bit_tuple[1], v1)  # set v1 (0 or 1), to bit-2
-    val2 = set_bit(val1, bit_tuple[0], v2)  # set v2 (0 or 1), to bit-1
-    return val2
-
-
-def trade_lst_elements(lst, pos_tuple):
-    lst1 = lst[:]
-    p0, p1 = pos_tuple
-    lst1[p0] = lst[p1]
-    lst1[p1] = lst[p0]
-    return lst1
-
-
-def construct_value_from_dict(d):
-    value = 0
-    for b, v in d.items():
-        if v == 1:
-            value |= (1 << b)
-    return value
-
-
-def make_vkdic(kdic, nov):
-    vkdic = {}
-    for kn, klause in kdic.items():
-        vkdic[kn] = VKlause(kn, klause, nov)
-    return vkdic
-
-
-def test_tx(tx, vkdic):
-    kns = sorted(list(vkdic.keys()))
-    nvkdic = tx.trans_vkdic(vkdic)
-
-    vdic = {}
-    vhit_dic = {}
-    N = 2 ** tx.nov
-    for v in range(N):
-        nv = tx.trans_value(v)
-
-        hset0 = set([])
-        for kn, vk in vkdic.items():
-            if vk.hit(v):
-                hset0.add(kn)
-
-        hset = set([])
-        for kn, vk in nvkdic.items():
-            if vk.hit(nv):
-                hset.add(kn)
-
-        if hset0 != hset:
-            debug = 1
-            return False
-    return True
-
-    new_vkdic = tx.trans_vkdic(vkdic)
+from basics import get_bit, set_bit, flip_bit, trade_bits, trade_lst_elements
 
 
 class TransKlauseEngine:
@@ -251,13 +157,32 @@ class TransKlauseEngine:
             res.append(self.trans_value(v))
         return res
 
+    def test_me(self, vkdic):
+        kns = sorted(list(vkdic.keys()))
+        nvkdic = self.trans_vkdic(vkdic)
 
-def test_bitdic(conf_file_name):
-    pass
+        vdic = {}
+        vhit_dic = {}
+        N = 2 ** self.nov
+        for v in range(N):
+            nv = self.trans_value(v)
+
+            hset0 = set([])
+            for kn, vk in vkdic.items():
+                if vk.hit(v):
+                    hset0.add(kn)
+
+            hset = set([])
+            for kn, vk in nvkdic.items():
+                if vk.hit(nv):
+                    hset.add(kn)
+
+            if hset0 != hset:
+                debug = 1
+                print(f'Tx test failed on: {v}')
+                return False
+        return True
 
 
 if __name__ == '__main__':
-    # --------------------
-    test_dic()
-    # --------------------
     x = 1
