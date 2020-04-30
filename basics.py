@@ -119,12 +119,12 @@ def get_sats(start_node, vs):
         if node.conversion == None:  # reached root-seed
             break
         if type(node.conversion) == type(''):
-            splt = node.conversion.split('@')
+            splt = node.conversion.split("'")
             shift, bitvalue = int(splt[0]), int(splt[1])
             if bitvalue == 1:
                 nvs = [v + (1 << shift) for v in nvs]
         else:
             tx = node.conversion
-            nvs = [tx.reverse_value(v) for v innvs]
+            nvs = [tx.reverse_value(v) for v in nvs]
         node = node.parent
     return nvs

@@ -1,20 +1,10 @@
+from vklause import VKlause
 from bitdic import BitDic, perf_count
 from basics import get_sdic
 import pprint
 import sys
 import time
 
-SATS = []
-
-perf_count = {
-    "BitDic-init": 0,
-    "TxTopKn": 0,
-    "add_clause": 0,
-    "set_txseed": 0,
-    "test4_finish": 0,
-    "time-used":    0.0,
-    "split_topbit": 0
-}
 
 _time_count = 0
 
@@ -63,7 +53,7 @@ def search_sat(root, debug):
             # if 1 of them has sat. If yes, return will be
             # <sat>, None
             if type(node0) == type(1):  # see if it is sat(integer)
-                print(f'SAT found: {node0}')    # SAT!
+                print(f'{node0} SATs found ')    # SAT!
                 # print(f'start time: {_time_count}')
                 perf_count['time-used'] = time.time() - _time_count
                 break

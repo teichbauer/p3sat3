@@ -2,7 +2,18 @@ from basics import get_sdic, get_sats
 from vklause import VKlause
 from visualizer import Visualizer
 from TransKlauseEngine import TransKlauseEngine
-from solver4 import SATS, perf_count
+
+
+perf_count = {
+    "SATS": [],
+    "BitDic-init": 0,
+    "TxTopKn": 0,
+    "add_clause": 0,
+    "set_txseed": 0,
+    "test4_finish": 0,
+    "time-used":    0.0,
+    "split_topbit": 0
+}
 
 
 class BitDic:
@@ -76,51 +87,48 @@ class BitDic:
         N1 = 2 ** tb
         if len(vkdic0) == 0:
             vs = [v for v in range(N1)]
-            sats = get_sats(self, vs)
-            return sats, None
+            perf_count['SATS'] = get_sats(self, vs)
+            return len(perf_count['SATS']), None
 
         if len(vkdic1) == 0:
             vs = [N1 + v for v in range(N1)]
-            sats = get_sats(self, vs)
-            return sats, None
+            perf_count['SATS'] = get_sats(self, vs)
+            return len(perf_count['SATS']), None
 
         bitdic0 = BitDic(
             self.seed_name,
-            self.name + f'-{tb}@0',
+            self.name + f"-{tb}'0",
             vkdic0,
             tb)
 
         # from self to bitdic0: bit<tb> with value 0 droped
         # when converting back, a 0 should be added on tb-bit
-        bitdic0.conversion = f'{tb}@0'
+        bitdic0.conversion = f"{tb}'0"
         bitdic0.parent = self
 
-        sat = bitdic0.test4_finish()
-        if sat != None:
-            return sat, None
+        sats = bitdic0.test4_finish()
+        if sats != None:
+            perf_count['SATS'] = sats
+            return len(sats), None
 
         bdic = self.dic.copy()  # clone the bit-dic from self
         bdic.pop(tb)            # drop the top bit in bdic
-
-        m = 'C001t-19@1t-18@1t-17@1t-16@1t-15@1t-14@1t-13@1t-12@0-11@1t-10@1t-9@1t-8@1t-7@1t-6@1t-5@1t'
-        if self.name == m:
-            x = 1
 
         seed, top_bit = self.set_txseed(vkdic1, bdic)
         if seed == None:
             # with vkdic empty, there is only 1 line of value,
             # the search of v is just one single line, starting with 0.
             # so v = 0
-            return self.get_sat(0), None
+            return get_sats(self, [0]), None
         else:
             bitdic_tmp = BitDic(
                 f'~{self.seed_name}',
-                self.name + f'-{tb}@1',
+                self.name + f"-{tb}'1",
                 vkdic1,
                 tb)
             # from self to bitdic_tmp: bit<tb> with value 1 droped
             # when converting back, a 1 should be added on tb-bit
-            bitdic_tmp.conversion = f'{tb}@1'
+            bitdic_tmp.conversion = f"{tb}'1"
             bitdic_tmp.parent = self
 
             # the 2 returning bitdics will be visualized in solver4
@@ -128,9 +136,10 @@ class BitDic:
             if debug:
                 bitdic_tmp.visualize()
 
-            sat = bitdic_tmp.test4_finish()
-            if sat != None:
-                return sat, None
+            sats = bitdic_tmp.test4_finish()
+            if sats != None:
+                perf_count['SATS'] = sats
+                return len(sats), None
 
             if not bitdic_tmp.done:
                 # bitdic1 be tx-ed on 1 of its shortkns
@@ -139,24 +148,6 @@ class BitDic:
             else:
                 bitdic1 = bitdic_tmp
             return bitdic0, bitdic1
-
-    def get_sat(self, v):
-        node = self
-        # with vkdic empty, there is only 1 line of value, the search of v
-        # is just one single line, starting with 0. so v = 0
-        while node:
-            if node.conversion == None:  # reached root-seed
-                break
-            if type(node.conversion) == type(''):
-                splt = node.conversion.split('@')
-                shift, bitvalue = int(splt[0]), int(splt[1])
-                if bitvalue == 1:
-                    v = v + (1 << shift)
-            else:
-                tx = node.conversion
-                v = tx.reverse_value(v)
-            node = node.parent
-        return v
 
     def check_finish(self):
         rd = sorted(list(self.ordered_vkdic.keys()))
@@ -194,13 +185,13 @@ class BitDic:
             '''
         perf_count["test4_finish"] += 1
         self.check_finish()
-        sat = None
+        sats = None
         if not self.done and self.nov == 1:
             if len(self.dic[0][0]) == 0:
-                sat = self.get_sat(0)
+                sats = get_sats(self, [0])
             if len(self.dic[0][1]) == 0:
-                sat = self.get_sat(1)
-        return sat
+                sats = get_sats(self, [1])
+        return sats
 
     def most_popular(self, d):
         ''' Among every bit of d[bit] = [[0-kns],[10kns]]
@@ -261,8 +252,9 @@ class BitDic:
             True)                   # trans to the top-position (v == 0)
 
         new_vkdic = tx.trans_vkdic(self.vkdic)
-
-        bitdic = BitDic(tx_seed, self.name + 't', new_vkdic, self.nov)
+        # turn "19'1" -> "19't"
+        name = self.name.replace("'1", "'t")
+        bitdic = BitDic(tx_seed, name, new_vkdic, self.nov)
         bitdic.conversion = tx
         bitdic.parent = self
         return bitdic

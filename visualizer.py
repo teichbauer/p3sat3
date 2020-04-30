@@ -25,7 +25,9 @@ class Visualizer:
         return knames, msg
 
     def output(self, bdic, tx=None):
-        filename = bdic.name + '.txt'
+        fname = bdic.name.replace('@', "'")
+        fname = fname.replace("1t", "t")
+        filename = fname + '.txt'
         if not tx and type(bdic.conversion) != type(''):
             tx = bdic.conversion
         knames, koutput = self.output_vkdic(bdic.seed_name)

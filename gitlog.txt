@@ -1,3 +1,8 @@
+0.3.176-20200430
+- the char @ changed to ' to be shorter. "1t" changed to 't' to short.
+  so changed conversion name, when it is a string (was @1t, @1 or @0)
+- remove BitDic.get_sat. made get_sats in basics.py, that converts an array of
+  values to array of sats.
 0.3.175-20200430
 - cleaned up structurally
 - intro of dealing with when vkdic becomes empty -> collect sats!
