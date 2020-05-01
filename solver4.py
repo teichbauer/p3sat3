@@ -23,7 +23,7 @@ def initial_bitdic(conf_filename, seed='C001'):
     return bitdic
 
 
-def loop_tree(conf_filename, debug=False):
+def loop_tree(conf_filename, msg=False, debug=False):
     global _time_count
     root0 = initial_bitdic(conf_filename)
     if debug:
@@ -35,19 +35,21 @@ def loop_tree(conf_filename, debug=False):
     # test_tx(tx, root0.vkdic)
 
     _time_count = time.time()
-    search_sat(root, debug)
+    search_sat(root, msg, debug)
 
 
-def search_sat(root, debug):
+def search_sat(root, msg, debug):
     nodes = [root]
     while len(nodes) > 0:
         node = nodes.pop(0)
         if debug:
             node.visualize()
         if node.done:
-            print(f'{node.name} is done.')
+            if msg:
+                print(f'{node.name} is done.')
         else:
-            print(f'split {node.name}')
+            if msg:
+                print(f'split {node.name}')
             node0, node1 = node.split_topbit(debug)
             # in split_topbit, the two children are tested to see
             # if 1 of them has sat. If yes, return will be
@@ -59,23 +61,26 @@ def search_sat(root, debug):
                 break
             else:
                 if node0.done:
-                    print(f'{node0.name} is done.')
+                    if msg:
+                        print(f'{node0.name} is done.')
                 else:
                     nodes.append(node0)
                 if node1.done:
-                    print(f'{node1.name} is done.')
+                    if msg:
+                        print(f'{node1.name} is done.')
                 else:
                     nodes.append(node1)
 
 
 if __name__ == '__main__':
     pp = pprint.PrettyPrinter(indent=4)
-    debug = len(sys.argv) == 3
+    msg = len(sys.argv) == 3
+    debug = len(sys.argv) == 4
     if len(sys.argv) == 1:
         config_file_name = 'config20_80.json'
         # config_file_name = 'config1.json'
     else:
         config_file_name = sys.argv[1]
-    loop_tree('./configs/' + config_file_name, debug)
+    loop_tree('./configs/' + config_file_name, msg, debug)
     print('perf-count: ')
     pp.pprint(perf_count)
