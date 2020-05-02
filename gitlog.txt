@@ -1,3 +1,9 @@
+0.3.179-20200502
+- analyzing the sat case for splitting last 6 bits to 2X3bits in 3 files: 
+  doc/analysis-7@t-6@1.txt
+  doc/analysis-7@t-6@1-L3.txt / doc/analysis-7@t-6@1-L3c.txt
+  doc/analysis-7@t-6@1-R3.txt / doc/analysis-7@t-6@1-R3c.txt
+  Still ongoing: look into them and trying to figure out...
 0.3.178-20200501
 - refactored some run params/input/output
 - new thought: can I not only drop bit as I am doing now, but also split
