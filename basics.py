@@ -111,6 +111,8 @@ def trade_lst_elements(lst, pos_tuple):
 
 
 def get_sats(start_node, vs):
+    nos = len(vs)
+    print(f'{nos} sat(s) found!!!')
     node = start_node
     nvs = vs[:]
     # with vkdic empty, there is only 1 line of value, the search of v
