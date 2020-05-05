@@ -1,3 +1,6 @@
+0.3.181-20200505
+- bitdic.subset now can cut 7-4, 3-0 bit from config1.json
+- visualizer can print out better formatted cut json files
 0.3.180-20200504
 - back porting from solvertest/* (see 0.4.15)
 0.3.179-20200502

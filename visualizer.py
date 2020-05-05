@@ -1,3 +1,6 @@
+from datetime import datetime
+
+
 class Visualizer:
     def __init__(self, vkdic, nov):
         self.vkdic = vkdic
@@ -52,12 +55,42 @@ class Visualizer:
             fil.write(line + '\n')
         fil.close()
 
+    def print_kstr(self, kn, kdic, nov):
+        bns = sorted(list(kdic.keys()), reverse=True)
+        m = f'"{kn}":' + '{'
+        # for b in bns:
+        #     L = (nov - b) * ' '
+        #     m += L + str(kdic[b])
+        # m += '  }'
+        # m += ', #   {'
+        for b in bns:
+            m += ' ' + str(b) + ':' + str(kdic[b]) + ','
+        m = m.strip(',') + ' },'
+        return m
+
     def output_config_file(self, vkdic, nov, fname):
-        import pprint
-        data = {
-            "nov": nov,
-            "kdic": {kn: vk.dic for kn, vk in vkdic.items()}
-        }
-        output_s = pprint.pformat(data)
-#          ^^^^^^^^^^^^^^^
-        open(f'./configs/{fname}', 'w').write(output_s)
+        dt_string = datetime.now().isoformat()
+        kns = sorted(list(vkdic.keys()))
+        lines = []
+        lines.append(f'# {fname}  -  {dt_string}')
+        lines.append('{')
+        lines.append('  "nov": ' + str(nov) + ',')
+        lines.append('  "kdic": {')
+        # for kn, vk in vkdic.items():
+        for kn in kns:
+            lines.append('    ' + self.print_kstr(kn, vkdic[kn].dic, nov))
+        lines.append('  }')
+        lines.append('}')
+
+        outf = open(f'./configs/{fname}', 'w')
+        for line in lines:
+            outf.write(line + '\n')
+        outf.close()
+        #         import pprint
+        #         data = {
+        #             "nov": nov,
+        #             "kdic": {kn: vk.dic for kn, vk in vkdic.items()}
+        #         }
+        #         output_s = pprint.pformat(data)
+        # #          ^^^^^^^^^^^^^^^
+        #         open(f'./configs/{fname}', 'w').write(output_s)

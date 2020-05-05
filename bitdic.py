@@ -34,11 +34,14 @@ class BitDic:
     # ==== end of def __init__(..)
 
     def subset(self, highbit, lowbit=0):
+        ''' carve out [highbit..lowbit] - collect all kvs sitting on these bits
+            and construct a new BitDic using these vks. Return the BitDic inst.
+            '''
         vkd = {}
         bits = list(self.dic.keys())
         drops = []
         for b in bits:
-            if b > highbit:
+            if b > highbit or b < lowbit:
                 drops.append(b)
 
         b = lowbit
@@ -318,23 +321,32 @@ class BitDic:
 
 
 if __name__ == '__main__':
-    ''' python bitdic.py <input-config-name> <high-bit> <output-config-filename>
-        this will cut at high-bit, and output lower part -> (subset)config
+    ''' python bitdic.py config1.json 3
+        this will cut between bit3 and bit-4, and output 2 sub-config files:
+        config1-7-4.json and config1-3-0.json
+        sitting on bit [7,6,5,4] and [3,2,1,0]
         '''
     import sys
     if len(sys.argv) == 4:
         infile_name = sys.argv[1]
         hbit = int(sys.argv[2])
-        outfile_name = sys.argv[3]
+        namebase = infile_name.split('.')[0]
     else:
         infile_name = 'config1.json'
-        hbit = 4
-        outfile_name = 'config1-4.json'
+        hbit = 3
+        namebase = 'config1'
 
     sdic = get_sdic(f'./configs/{infile_name}')
+    topbit = sdic['nov'] - 1
+    tlowbit = hbit + 1
+
     vkdic = make_vkdic(sdic['kdic'], sdic['nov'])
-    bitdic0 = BitDic('test', 'test-name', vkdic, sdic['nov'])
-    bitdic1 = bitdic0.subset(hbit)
-    bitdic1.output_config(outfile_name)
+    bitdic = BitDic('test', 'test-name', vkdic, sdic['nov'])
+    bitdic0 = bitdic.subset(hbit)
+    bitdic1 = bitdic.subset(topbit, tlowbit)
+    fn0 = f'{namebase}-{hbit}-0.json'
+    fn1 = f'{namebase}-{topbit}-{tlowbit}.json'
+    bitdic0.output_config(fn0)
+    bitdic1.output_config(fn1)
 
     x = 1
