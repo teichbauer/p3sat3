@@ -3,6 +3,7 @@ class VKlause:
         nov is the value-space bit-count, or number-of-variables
         bits is a list of bits in ascending order
         '''
+    # nov not used - remove it?
 
     def __init__(self, kname, dic, nov):
         self.kname = kname
@@ -12,6 +13,14 @@ class VKlause:
         self.bits = sorted(list(dic.keys()), reverse=True)
         self.nob = len(self.bits)             # 1, 2 or 3
         self.set_filter_and_mask()
+
+    def clone(self, drop_bits=None):  # drop_bits: list of bits to be dropped
+        dic = self.dic.copy()
+        if drop_bits != None:
+            for b in drop_bits:
+                if b in dic:
+                    dic.pop(b, None)
+        return VKlause(self.kname, dic, self.nov)
 
     def set_filter_and_mask(self):
         ''' For the example klause {7:1, 5:0, 2:1}

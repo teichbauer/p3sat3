@@ -1,19 +1,7 @@
-from basics import get_sdic, get_sats
+from basics import *
 from vklause import VKlause
 from visualizer import Visualizer
 from TransKlauseEngine import TransKlauseEngine
-
-
-perf_count = {
-    "SATS": [],
-    "BitDic-init": 0,
-    "TxTopKn": 0,
-    "add_clause": 0,
-    "set_txseed": 0,
-    "test4_finish": 0,
-    "time-used":    0.0,
-    "split_topbit": 0
-}
 
 
 class BitDic:
@@ -44,6 +32,24 @@ class BitDic:
         self.conversion = None
         self.vis = Visualizer(self.vkdic, self.nov)
     # ==== end of def __init__(..)
+
+    def subset(self, highbit, lowbit=0):
+        vkd = {}
+        bits = list(self.dic.keys())
+        drops = []
+        for b in bits:
+            if b > highbit:
+                drops.append(b)
+
+        b = lowbit
+        while b <= highbit:
+            zeros, ones = self.dic[b]  # lists of vks
+            for kn in zeros + ones:    # zeros and ones have diff kns in them
+                if kn not in vkd:
+                    vk = self.vkdic[kn].clone(drops)
+                    vkd[kn] = vk
+            b += 1
+        return BitDic("subset", self.name + "-child", vkd, highbit + 1)
 
     def split_topbit(self, single, debug):
         ''' if self.nov = 8, top bit is bit-7.
@@ -296,7 +302,6 @@ class BitDic:
                         # put vkn in 0-list, or 1-list
                         lst[v].append(vkn)
                 return vclause
-
         if vk:
             return add_vk(self, vk)
         else:
@@ -308,6 +313,28 @@ class BitDic:
     def visualize(self):
         self.vis.output(self)
 
+    def output_config(self, fname):
+        self.vis.output_config_file(self.vkdic, self.nov,  fname)
+
 
 if __name__ == '__main__':
+    ''' python bitdic.py <input-config-name> <high-bit> <output-config-filename>
+        this will cut at high-bit, and output lower part -> (subset)config
+        '''
+    import sys
+    if len(sys.argv) == 4:
+        infile_name = sys.argv[1]
+        hbit = int(sys.argv[2])
+        outfile_name = sys.argv[3]
+    else:
+        infile_name = 'config1.json'
+        hbit = 4
+        outfile_name = 'config1-4.json'
+
+    sdic = get_sdic(f'./configs/{infile_name}')
+    vkdic = make_vkdic(sdic['kdic'], sdic['nov'])
+    bitdic0 = BitDic('test', 'test-name', vkdic, sdic['nov'])
+    bitdic1 = bitdic0.subset(hbit)
+    bitdic1.output_config(outfile_name)
+
     x = 1

@@ -51,3 +51,13 @@ class Visualizer:
                     line += f'{kn} '
             fil.write(line + '\n')
         fil.close()
+
+    def output_config_file(self, vkdic, nov, fname):
+        import pprint
+        data = {
+            "nov": nov,
+            "kdic": {kn: vk.dic for kn, vk in vkdic.items()}
+        }
+        output_s = pprint.pformat(data)
+#          ^^^^^^^^^^^^^^^
+        open(f'./configs/{fname}', 'w').write(output_s)

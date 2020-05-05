@@ -1,16 +1,9 @@
 from vklause import VKlause
-from bitdic import BitDic, perf_count
-from basics import get_sdic
+from bitdic import BitDic
+from basics import get_sdic, make_vkdic, perf_count
 import pprint
 import sys
 import time
-
-
-def make_vkdic(kdic, nov):
-    vkdic = {}
-    for kn, klause in kdic.items():
-        vkdic[kn] = VKlause(kn, klause, nov)
-    return vkdic
 
 
 def initial_bitdic(conf_filename, seed='C001'):
@@ -73,8 +66,8 @@ if __name__ == '__main__':
     pp = pprint.PrettyPrinter(indent=4)
     msg = len(sys.argv) == 3
     debug = len(sys.argv) == 4
-    # single = True
-    single = False
+    single = True
+    # single = False
     if len(sys.argv) == 1:
         config_file_name = 'config20_80.json'
         # config_file_name = 'config1.json'
