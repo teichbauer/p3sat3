@@ -1,3 +1,6 @@
+0.3.185-20200508
+- minor fix
+- split cfg6-13.json into cfg6-13-2-0.json and cfg6-13-5-3.json.
 0.3.184-20200508
 - fixes in basics. finish_nov3: when vk.dic == {}, set bitdic.done=True, and 
   return []. Also cover this case in get_sats, and in VKlause.hit_values_nov3

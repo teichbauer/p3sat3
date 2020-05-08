@@ -334,7 +334,7 @@ if __name__ == '__main__':
         sitting on bit [7,6,5,4] and [3,2,1,0]
         '''
     import sys
-    if len(sys.argv) == 4:
+    if len(sys.argv) == 3:
         infile_name = sys.argv[1]
         hbit = int(sys.argv[2])
         namebase = infile_name.split('.')[0]
@@ -353,6 +353,7 @@ if __name__ == '__main__':
     bitdic1 = bitdic.subset(topbit, tlowbit)
     fn0 = f'{namebase}-{hbit}-0.json'
     fn1 = f'{namebase}-{topbit}-{tlowbit}.json'
+    print(f'outputing: {fn0}  {fn1}')
     bitdic0.output_config(fn0)
     bitdic1.output_config(fn1)
 
