@@ -69,7 +69,8 @@ if __name__ == '__main__':
     single = True
     # single = False
     if len(sys.argv) == 1:
-        config_file_name = 'config20_80.json'
+        config_file_name = 'cfg6-13.json'
+        # config_file_name = 'config20_80.json'
         # config_file_name = 'config1.json'
     else:
         config_file_name = sys.argv[1]

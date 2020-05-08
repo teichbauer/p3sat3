@@ -132,6 +132,11 @@ class TransKlauseEngine:
             dic[i] = [1, 0][self.top]    # top=False -> bit-values: 1
         self.vklause = VKlause(self.kname, dic, self.nov)
 
+    def set_tx(self):
+        bits = self.start_vklause.bits[:]
+        if len(bits) == 0:
+            return
+
     def trans_klause(self, vklause):
         klause = vklause.dic.copy()
         bs = list(klause.keys())

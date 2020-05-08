@@ -1,3 +1,17 @@
+0.3.182-20200507
+- basics/finish_nov3 will terminate a vov==3 bitdic: 
+    sats=[] empty or not, bitdic.done will set to be True
+- vklause, for nov==3, will deliver hit value-list, for basics/finish_nove3
+  to test for sats.
+- this finish_nov3 way is integrated into bitdic
+- found a bug in TransKlauseEngine!
+  when processing name_txs - ist of tuples, here I just trade the bits/positions
+  that is NOT right. I have some idea to do it right.
+  The evidence for the bug: 
+    C1 { 5:1, 4:1, 0:1}/tb==0 -> name_tx :[(0,5) (5,4),(4,3)]
+     for v = 51/110011 C1.hit(v) == True, but for v' = Tx.trans_value(51)  19,
+     C1' = tx.trans_klause(C1), C1'.hit(19) = False!
+  TBD: TransKlauseEngine.set_tx - in the process
 0.3.181-20200505
 - bitdic.subset now can cut 7-4, 3-0 bit from config1.json
 - visualizer can print out better formatted cut json files

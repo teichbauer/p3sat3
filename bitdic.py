@@ -21,6 +21,8 @@ class BitDic:
         self.seed_name = seed_name
         self.name = bdname
         self.nov = nov
+        if nov == 3:
+            self.check8set = set([0, 1, 2, 3, 4, 5, 6, 7])
         self.dic = {}   # keyed by bits, value: [[0-kns],[1-kns]]
         self.vkdic = vkdic
         self.parent = None  # the parent that generated / tx-to self
@@ -123,7 +125,7 @@ class BitDic:
         bitdic0.parent = self
 
         sats = bitdic0.test4_finish()
-        if sats != None:
+        if sats != None and len(sats) > 0:
             perf_count['SATS'] = sats
             return len(sats), None
 
@@ -153,7 +155,7 @@ class BitDic:
                 bitdic_tmp.visualize()
 
             sats = bitdic_tmp.test4_finish()
-            if sats != None:
+            if sats != None and len(sats) > 0:
                 perf_count['SATS'] = sats
                 return len(sats), None
 
@@ -167,6 +169,8 @@ class BitDic:
     # ==== end of def split_topbit(self, single, debug)
 
     def check_finish(self):
+        if self.nov == 3:
+            return finish_nov3(self)
         rd = sorted(list(self.ordered_vkdic.keys()))
         if len(rd) > 1:
             kns = self.ordered_vkdic[rd[0]].copy()
@@ -189,6 +193,7 @@ class BitDic:
 
             elif 2 in self.ordered_vkdic:
                 pass
+        return []
     # ====== end of def check_finish(self)
 
     def test4_finish(self):
@@ -202,8 +207,9 @@ class BitDic:
             When sat found, return it. If not, self.done = False/True
             '''
         perf_count["test4_finish"] += 1
-        self.check_finish()
-        sats = None
+        sats = []
+        sats = self.check_finish()
+        # sats = None
         if not self.done and self.nov == 1:
             if len(self.dic[0][0]) == 0:
                 sats = get_sats(self, [0])

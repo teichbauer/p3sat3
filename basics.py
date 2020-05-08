@@ -26,6 +26,21 @@ def make_vkdic(kdic, nov):
 # ============================================
 
 
+def finish_nov3(bitdic):
+    ''' when bitdic.nov == 3, the value-space is 8
+        check if the vklauses in bitdic.vkdic cover all of them
+        '''
+    sats = []
+    if bitdic.nov == 3:
+        unhits = bitdic.check8set.copy()
+        for kn, vk in bitdic.vkdic.items():
+            if len(unhits) == 0:
+                return []
+            unhits = unhits - set(vk.hit_values_nov3())
+        sats = list(unhits)
+    return sats
+
+
 def get_sats(start_node, vs):
     nos = len(vs)
     print(f'{nos} sat(s) found!!!')
