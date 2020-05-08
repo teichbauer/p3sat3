@@ -1,3 +1,7 @@
+0.3.184-20200508
+- fixes in basics. finish_nov3: when vk.dic == {}, set bitdic.done=True, and 
+  return []. Also cover this case in get_sats, and in VKlause.hit_values_nov3
+- fix in bitdic. Now solver4 works again with more solid Tx.
 0.3.183-20200508
 - recoded TransklauseEngine.setup_tx:
   there are alway nov-many transfer-tuples, the first ones are for vk.dic,

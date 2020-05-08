@@ -208,7 +208,7 @@ class BitDic:
             '''
         perf_count["test4_finish"] += 1
         sats = []
-        sats = self.check_finish()
+        sats = get_sats(self, self.check_finish())
         # sats = None
         if not self.done and self.nov == 1:
             if len(self.dic[0][0]) == 0:

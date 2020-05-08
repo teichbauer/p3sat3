@@ -28,7 +28,9 @@ class VKlause:
     def hit_values_nov3(self):
         if self.nov == 3:
             hvs = []
-            if self.nob == 3:
+            if self.nob == 0:          # vklause.dic = {}
+                return list(range(8))  # all 8 values are hit
+            elif self.nob == 3:
                 hvs.append(self.mask)
             elif self.nob == 2:
                 # filter ca be: 3(011), 5(101), 6(110)
