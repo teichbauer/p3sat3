@@ -7,10 +7,13 @@ class VKlause:
 
     def __init__(self, kname, dic, nov):
         self.kname = kname
-        self.dic = dic          # { 7:1, 3: 0, 0: 1}, or {3:0, 1:1} or {3:1}
-        self.nov = nov          # number of variables - bits of value space
+        self.dic = dic  # { 7:1, 3: 0, 0: 1}, or {3:0, 1:1} or {3:1}
+        self.nov = nov  # number of variables (here: 8) - bits of value space
         # all bits, in descending order
-        self.bits = sorted(list(dic.keys()), reverse=True)
+        self.bits = sorted(list(dic.keys()), reverse=True)  # [7,3,0]
+        # void bits of the nov-bits
+        bs = list(range(nov))
+        self.nbits = [b for b in bs if b not in self.bits]  # [1,2,4,5,6]
         self.nob = len(self.bits)             # 1, 2 or 3
         self.set_filter_and_mask()
 

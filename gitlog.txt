@@ -1,3 +1,10 @@
+0.3.183-20200508
+- recoded TransklauseEngine.setup_tx:
+  there are alway nov-many transfer-tuples, the first ones are for vk.dic,
+  the rest takes care of trans-value usage. .trans_klause will only use the
+  first ones(as many as vk.dic's length). When doing .trans_value/.reverse_value
+  all nov tuples are used. This fixed the bug when simply do bit-trades for tx.
+- in VKlause, added .nbits listing all bits(by position-name) not in the klause.
 0.3.182-20200507
 - basics/finish_nov3 will terminate a vov==3 bitdic: 
     sats=[] empty or not, bitdic.done will set to be True

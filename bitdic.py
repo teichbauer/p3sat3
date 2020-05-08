@@ -279,6 +279,7 @@ class BitDic:
             True)                   # trans to the top-position (v == 0)
 
         new_vkdic = tx.trans_vkdic(self.vkdic)
+
         # turn "19'1" -> "19't"
         name = self.name.replace("'1", "'t")
         bitdic = BitDic(tx_seed, name, new_vkdic, self.nov)
