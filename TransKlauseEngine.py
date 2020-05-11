@@ -41,9 +41,10 @@ def trade_lst_elements(lst, pos_tuple):
 
 class TransKlauseEngine:
     """ move base_klause's bits to the left-most positions, and
-        set them to be 0s or 1s (depending on top), assign to self.klause.
-        while doing this, set up operators so that any klause
-        will be transfered to a new klause compatible to self.klause
+        set them to be 0s or 1s (depending on top), assign to 
+        self.klause. while doing this, set up operators so that any 
+        klause will be transfered to a new klause compatible to 
+        self.klause
         """
 
     def __init__(self,
@@ -69,8 +70,8 @@ class TransKlauseEngine:
         return msg
 
     def _find_tx_tuple(self, head_or_tail, bit, lst=None):
-        ''' find/return the tuple in self.name_txs, with given starting bit
-            internal use only
+        ''' find/return the tuple in self.name_txs, with given 
+            starting bit internal use only
             '''
         # index = (0,1) for head_or_tail = (True, False)
         index = int(not head_or_tail)
@@ -97,7 +98,8 @@ class TransKlauseEngine:
         if not hi_bits:
             hi_bits = [self.nov - (i + 1) for i in range(L)]
 
-        # be safe, in case top_bit was wrong, set it to be the highst in bits
+        # be safe, in case top_bit was wrong, set it to be
+        # the highst in bits
         if len(bits) > 0 and not self.top_bit in bits:
             self.top_bit = bits[0]
 
@@ -120,7 +122,9 @@ class TransKlauseEngine:
                 allbits.remove(hi)  # arget-bit consumed
         # setup the trnasfer-tuples for start_vklause.nbits
         vk = self.start_vklause
-        assert(len(allbits) == len(vk.nbits))  # safty check
+        # safty check
+        if len(allbits) != len(vk.nbits):
+            assert(False), "bits-length wrong"
         for i in range(len(vk.nbits)):
             self.name_txs.append((vk.nbits[i], allbits[i]))
 
@@ -196,6 +200,16 @@ class TransKlauseEngine:
         for v in vs:
             res.append(self.trans_value(v))
         return res
+
+    def trans_bitdic(self, bitdic):
+        new_vkdic = self.trans_vkdic(bitdic.vkdic)
+        # turn "19'1" -> "19't"
+        name = bitdic.name.replace("'1", "'t")
+        # new_bitdic = BitDic(self.name, name, new_vkdic, bitdic.nov)
+        new_bitdic = bitdic.__class__(self.kname, name, new_vkdic, bitdic.nov)
+        new_bitdic.conversion = self
+        new_bitdic.parent = bitdic
+        return new_bitdic
 
     def test_me(self, vkdic):
         kns = sorted(list(vkdic.keys()))

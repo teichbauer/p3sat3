@@ -1,3 +1,10 @@
+0.3.186-20200510
+- bitdic.add_clause renamed to .add_vklause
+- move BitDic.check_finish() to basics/check_finish(node)
+  BitDic.test4_finish() to basics/test4_finish(node)
+- move BitDic.TxTopKn to TransKlauseEngine.trans_bitdic
+- got rid of BitDic.output_config
+- now that BitDic is leaner, getting ready for cut with BitDic.subset - TBD
 0.3.185-20200508
 - minor fix
 - split cfg6-13.json into cfg6-13-2-0.json and cfg6-13-5-3.json.

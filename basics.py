@@ -4,7 +4,7 @@ perf_count = {
     "SATS": [],
     "BitDic-init": 0,
     "TxTopKn": 0,
-    "add_clause": 0,
+    "add_vklause": 0,
     "set_txseed": 0,
     "test4_finish": 0,
     "time-used":    0.0,
@@ -66,3 +66,55 @@ def get_sats(start_node, vs):
             nvs = [tx.reverse_value(v) for v in nvs]
         node = node.parent
     return nvs
+
+
+def check_finish(node):
+    ''' criterion or criteria for being finished(dnoe, or sat):
+        - when the seed vk is empty - it hits all value space
+            which means, that no value left for being sat
+            check_finish will set node.done = True
+        - when nov == 1 (only 1 remaining variable), and
+            the single bit's value 0 or 1 has no hit vk:
+            this 0 ot 1, IS the sought sat value
+        When sat found, return it. If not, node.done = False/True
+        '''
+    if node.nov == 3:
+        return finish_nov3(node)
+    rd = sorted(list(node.ordered_vkdic.keys()))
+    if len(rd) > 1:
+        kns = node.ordered_vkdic[rd[0]].copy()
+        if 0 in node.ordered_vkdic:
+            node.done = True
+        elif 1 in node.ordered_vkdic:
+            # check if there are 2 kn in kns, with
+            # the same bit but opposite bit-values
+            # E.G. bit-5:0 vs other bit-5:1)
+            while not node.done and len(kns) >= 2:
+                kn0 = kns.pop(0)
+                k0 = node.vkdic[kn0].dic
+                b0 = list(k0.keys())[0]
+                for kn in kns:
+                    k = node.vkdic[kn].dic
+                    b = list(k.keys())[0]
+                    if b0 == b and k0[b0] != k[b]:
+                        node.done = True
+                        break
+
+        elif 2 in node.ordered_vkdic:
+            pass
+    return []
+# ====== end of def check_finish(node)
+
+
+def test4_finish(node):
+    perf_count["test4_finish"] += 1
+    sats = []
+    sats = get_sats(node, check_finish(node))
+    # sats = None
+    if not node.done and node.nov == 1:
+        if len(node.dic[0][0]) == 0:
+            sats = get_sats(node, [0])
+        if len(node.dic[0][1]) == 0:
+            sats = get_sats(node, [1])
+    return sats
+# ==== end of def test4_finish(node)

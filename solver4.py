@@ -1,4 +1,4 @@
-from vklause import VKlause
+from TransKlauseEngine import TransKlauseEngine
 from bitdic import BitDic
 from basics import get_sdic, make_vkdic, perf_count
 import pprint
@@ -20,9 +20,9 @@ def loop_tree(conf_filename, single=False, msg=False, debug=False):
     if debug:
         root0.visualize()
     seed, top_bit = root0.set_txseed()
-    root = root0.TxTopKn(seed, top_bit)
+    tx = TransKlauseEngine(seed, top_bit, root0.vkdic[seed], root0.nov)
+    root = tx.trans_bitdic(root0)
 
-    tx = root.conversion
     # test_tx(tx, root0.vkdic)
 
     search_sat(root, single, msg, debug)

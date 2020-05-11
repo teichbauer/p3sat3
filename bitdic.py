@@ -30,7 +30,7 @@ class BitDic:
         self.ordered_vkdic = {}
         for i in range(nov):        # number_of_variables from config
             self.dic[i] = [[], []]
-        self.add_clause()
+        self.add_vklause()
         self.conversion = None
         self.vis = Visualizer(self.vkdic, self.nov)
     # ==== end of def __init__(..)
@@ -124,7 +124,7 @@ class BitDic:
         bitdic0.conversion = f"{tb}'0"
         bitdic0.parent = self
 
-        sats = bitdic0.test4_finish()
+        sats = test4_finish(bitdic0)
         if sats != None and len(sats) > 0:
             perf_count['SATS'] = sats
             return len(sats), None
@@ -154,72 +154,24 @@ class BitDic:
             if debug:
                 bitdic_tmp.visualize()
 
-            sats = bitdic_tmp.test4_finish()
+            sats = test4_finish(bitdic_tmp)
             if sats != None and len(sats) > 0:
                 perf_count['SATS'] = sats
                 return len(sats), None
 
             if not bitdic_tmp.done:
+                vk = vkdic1[seed]
+                tx = TransKlauseEngine(seed, top_bit, vk, tb)
                 # bitdic1 be tx-ed on 1 of its shortkns
-                bitdic1 = bitdic_tmp.TxTopKn(seed, top_bit)
+                bitdic1 = tx.trans_bitdic(bitdic_tmp)
                 # print(f'for bitdic1t Tx-seed:{seed}')
             else:
                 bitdic1 = bitdic_tmp
             return bitdic0, bitdic1
     # ==== end of def split_topbit(self, single, debug)
 
-    def check_finish(self):
-        if self.nov == 3:
-            return finish_nov3(self)
-        rd = sorted(list(self.ordered_vkdic.keys()))
-        if len(rd) > 1:
-            kns = self.ordered_vkdic[rd[0]].copy()
-            if 0 in self.ordered_vkdic:
-                self.done = True
-            elif 1 in self.ordered_vkdic:
-                # check if there are 2 kn in kns, with
-                # the same bit but opposite bit-values
-                # E.G. bit-5:0 vs other bit-5:1)
-                while not self.done and len(kns) >= 2:
-                    kn0 = kns.pop(0)
-                    k0 = self.vkdic[kn0].dic
-                    b0 = list(k0.keys())[0]
-                    for kn in kns:
-                        k = self.vkdic[kn].dic
-                        b = list(k.keys())[0]
-                        if b0 == b and k0[b0] != k[b]:
-                            self.done = True
-                            break
-
-            elif 2 in self.ordered_vkdic:
-                pass
-        return []
-    # ====== end of def check_finish(self)
-
-    def test4_finish(self):
-        ''' criterion or criteria for being finished(dnoe, or sat):
-            - when the seed vk is empty - it hits all value space
-              which means, that no value left for being sat
-              this will set self.done = True
-            - when nov == 1 (only 1 remaining variable), and
-              the single bit's value 0 or 1 has no hit vk:
-              this 0 ot 1, IS the sought sat value
-            When sat found, return it. If not, self.done = False/True
-            '''
-        perf_count["test4_finish"] += 1
-        sats = []
-        sats = get_sats(self, self.check_finish())
-        # sats = None
-        if not self.done and self.nov == 1:
-            if len(self.dic[0][0]) == 0:
-                sats = get_sats(self, [0])
-            if len(self.dic[0][1]) == 0:
-                sats = get_sats(self, [1])
-        return sats
-    # ==== end of def test4_finish(self)
-
     def most_popular(self, d):
-        ''' Among every bit of d[bit] = [[0-kns],[10kns]]
+        ''' Among every bit of d[bit] = [[0-kns],[1-kns]]
             find which bit has the most sum: len([0-kns]) + len([1-kns])
             This is used as the power of this bit (how popular)
             make a dict keyed by power, value is bit-number
@@ -269,27 +221,8 @@ class BitDic:
         return lst[0], top_bit
     # ==== end of def set_txseed(self, vkdic=None, bdic=None)
 
-    def TxTopKn(self, tx_seed, top_bit):
-        perf_count["TxTopKn"] += 1
-        tx = TransKlauseEngine(
-            tx_seed,                # tx.name
-            top_bit,                # this bit will be most sig bit
-            self.vkdic[tx_seed],    # start-klause
-            self.nov,
-            True)                   # trans to the top-position (v == 0)
-
-        new_vkdic = tx.trans_vkdic(self.vkdic)
-
-        # turn "19'1" -> "19't"
-        name = self.name.replace("'1", "'t")
-        bitdic = BitDic(tx_seed, name, new_vkdic, self.nov)
-        bitdic.conversion = tx
-        bitdic.parent = self
-        return bitdic
-    # ==== end of def TxTopKn(self, tx_seed, top_bit)
-
-    def add_clause(self, vk=None):
-        perf_count["add_clause"] += 1
+    def add_vklause(self, vk=None):
+        perf_count["add_vklause"] += 1
         # add clause c into bit-dict
 
         def add_vk(self, vkn):
@@ -318,13 +251,10 @@ class BitDic:
             for vkn in self.vkdic:
                 add_vk(self, vkn)
             return self
-    # ==== end of def add_clause(self, vk=None)
+    # ==== end of def add_vklause(self, vk=None)
 
     def visualize(self):
         self.vis.output(self)
-
-    def output_config(self, fname):
-        self.vis.output_config_file(self.vkdic, self.nov,  fname)
 
 
 if __name__ == '__main__':
@@ -354,7 +284,7 @@ if __name__ == '__main__':
     fn0 = f'{namebase}-{hbit}-0.json'
     fn1 = f'{namebase}-{topbit}-{tlowbit}.json'
     print(f'outputing: {fn0}  {fn1}')
-    bitdic0.output_config(fn0)
-    bitdic1.output_config(fn1)
+    bitdic0.vis.output_config_file(bitdic0.vkdic, bitdic0.nov, fn0)
+    bitdic1.vis.output_config_file(bitdic1.vkdic, bitdic1.nov, fn1)
 
     x = 1
