@@ -1,3 +1,5 @@
+0.3.187-20200512
+- port solvertest repo's updates
 0.3.186-20200510
 - bitdic.add_clause renamed to .add_vklause
 - move BitDic.check_finish() to basics/check_finish(node)

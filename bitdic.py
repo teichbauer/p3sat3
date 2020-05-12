@@ -39,7 +39,7 @@ class BitDic:
         ''' carve out [highbit..lowbit] - collect all kvs sitting on these bits
             and construct a new BitDic using these vks. Return the BitDic inst.
             '''
-        vkd = {}
+        vkd0 = {}
         bits = list(self.dic.keys())
         drops = []
         for b in bits:
@@ -50,11 +50,15 @@ class BitDic:
         while b <= highbit:
             zeros, ones = self.dic[b]  # lists of vks
             for kn in zeros + ones:    # zeros and ones have diff kns in them
-                if kn not in vkd:
-                    vk = self.vkdic[kn].clone(drops)
-                    vkd[kn] = vk
+                if kn not in vkd0:
+                    vk = self.vkdic[kn].clone(drops, lowbit)
+                    vkd0[kn] = vk
             b += 1
-        return BitDic("subset", self.name + "-child", vkd, highbit + 1)
+
+        return BitDic("subset",
+                      self.name + "-child",
+                      vkd0,
+                      (highbit - lowbit) + 1)
 
     def split_topbit(self, single, debug):
         ''' if self.nov = 8, top bit is bit-7.
@@ -96,16 +100,17 @@ class BitDic:
         vkdic0.update(vkdic_mix)  # add mix-dic to 0-dic
         vkdic1.update(vkdic_mix)  # add mix-dic to 1-dic
 
-        N1 = 2 ** tb
         if len(vkdic0) == 0:
             if single:
                 vs = [0]
             else:
+                N1 = 2 ** tb
                 vs = [v for v in range(N1)]
             perf_count['SATS'] = get_sats(self, vs)
             return len(perf_count['SATS']), None
 
         if len(vkdic1) == 0:
+            N1 = 2 ** tb
             if single:
                 vs = [N1]
             else:
@@ -221,9 +226,8 @@ class BitDic:
         return lst[0], top_bit
     # ==== end of def set_txseed(self, vkdic=None, bdic=None)
 
-    def add_vklause(self, vk=None):
+    def add_vklause(self, vk=None):  # add vklause vk into bit-dict
         perf_count["add_vklause"] += 1
-        # add clause c into bit-dict
 
         def add_vk(self, vkn):
             vclause = self.vkdic[vkn]
@@ -245,6 +249,8 @@ class BitDic:
                         # put vkn in 0-list, or 1-list
                         lst[v].append(vkn)
                 return vclause
+        # ---- end of def add_vk(self, vkn):
+
         if vk:
             return add_vk(self, vk)
         else:

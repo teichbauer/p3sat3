@@ -1,3 +1,24 @@
+def get_bit(val, bit):
+    return (val >> bit) & 1
+
+
+def set_bit(val, bit_index, new_bit_value):
+    """ Set the bit_index (0-based) bit of val to x (1 or 0)
+        and return the new val.
+        """
+    mask = 1 << bit_index  # mask - integer with just hte chosen bit set.
+    val &= ~mask           # Clear the bit indicated by the mask (if x == 0)
+    if new_bit_value:
+        val |= mask        # If x was True, set the bit indicated by the mask.
+    return val             # Return the result, we're done.
+
+
+def set_bits(val, d):
+    for b, v in d.items():
+        val = set_bit(val, b, v)
+    return val
+
+
 class VKlause:
     ''' veriable klause - klause with 1, 2 or 3 bits.
         nov is the value-space bit-count, or number-of-variables
@@ -16,13 +37,23 @@ class VKlause:
         self.nbits = [b for b in bs if b not in self.bits]  # [1,2,4,5,6]
         self.nob = len(self.bits)             # 1, 2 or 3
         self.set_filter_and_mask()
+        self.completion = 'tt'  # can be: p1 (1 from 3), or p2 (2 of 3)
 
-    def clone(self, drop_bits=None):  # drop_bits: list of bits to be dropped
+    def set_completion(self, cmpl):
+        self.completion = cmpl
+
+    def clone(self, drop_bits=[], lowbit=0):
+        # drop_bits: list of bits to be dropped
+        # lowbit: the new bit-0
         dic = self.dic.copy()
-        if drop_bits != None:
-            for b in drop_bits:
-                if b in dic:
-                    dic.pop(b, None)
+        for b in drop_bits:
+            if b in dic:
+                dic.pop(b, None)
+        if lowbit > 0:
+            d = {}
+            for b in dic:
+                d[b % lowbit] = dic[b]
+            dic = d
         return VKlause(self.kname, dic, self.nov)
 
     def hit_values_nov3(self):
@@ -105,9 +136,25 @@ class VKlause:
         fv = self.filter & v
         return not bool(self.mask ^ fv)
 
+    def hit_valuelist(self):
+        hits = []
+        nbs = sorted(self.nbits, reverse=True)
+        L = len(nbs)
+        for x in range(2**L):
+            d = {}
+            for i in range(L):
+                d[nbs[i]] = get_bit(x, i)
+            hits.append(set_bits(self.mask, d))
+        return hits
 
-if __name__ == '__main__':
-    # test hit_values_nov3
+
+def hit_values():
+    d = {5: 1, 3: 0, 2: 1}
+    vk = VKlause('name', d, 6)
+    hits = vk.hit_valuelist()
+
+
+def test_hit_values_nov3():
     dics = [
         {2: 0, 1: 0, 0: 0},  # hvs: [0]
         {2: 1, 1: 0, 0: 0},  # hvs: [4]
@@ -131,3 +178,8 @@ if __name__ == '__main__':
         hvs_str = str(hvs)
         print(f'dic: {dic_str}: {hvs_str}')
         x = 1
+
+
+if __name__ == '__main__':
+    # test_hit_values_nov3()
+    hit_values()
