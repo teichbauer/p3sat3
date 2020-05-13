@@ -45,13 +45,13 @@ class BitDic:
         for b in bits:
             if b > highbit or b < lowbit:
                 drops.append(b)
-
+        new_nov = highbit - lowbit + 1
         b = lowbit
         while b <= highbit:
             zeros, ones = self.dic[b]  # lists of vks
             for kn in zeros + ones:    # zeros and ones have diff kns in them
                 if kn not in vkd0:
-                    vk = self.vkdic[kn].clone(drops, lowbit)
+                    vk = self.vkdic[kn].clone(drops, new_nov)
                     vkd0[kn] = vk
             b += 1
 

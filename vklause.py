@@ -37,24 +37,24 @@ class VKlause:
         self.nbits = [b for b in bs if b not in self.bits]  # [1,2,4,5,6]
         self.nob = len(self.bits)             # 1, 2 or 3
         self.set_filter_and_mask()
-        self.completion = 'tt'  # can be: p1 (1 from 3), or p2 (2 of 3)
+        self.completion = 3  # can be: p1 (1 from 3), or p2 (2 of 3)
 
     def set_completion(self, cmpl):
         self.completion = cmpl
 
-    def clone(self, drop_bits=[], lowbit=0):
+    def clone(self, drop_bits=[], new_nov=0):
         # drop_bits: list of bits to be dropped
-        # lowbit: the new bit-0
+        # new_nov: the new nov
         dic = self.dic.copy()
         for b in drop_bits:
             if b in dic:
                 dic.pop(b, None)
-        if lowbit > 0:
+        if new_nov > 0:
             d = {}
             for b in dic:
-                d[b % lowbit] = dic[b]
+                d[b % new_nov] = dic[b]
             dic = d
-        return VKlause(self.kname, dic, self.nov)
+        return VKlause(self.kname, dic, new_nov)
 
     def hit_values_nov3(self):
         if self.nov == 3:

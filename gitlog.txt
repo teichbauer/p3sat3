@@ -1,3 +1,8 @@
+0.3.188-20200513
+- port back from solvertest repo:
+  bitdic.py and vklause.py, new configs/config8_38.json
+- The config8_38.json has 4 sats found by solver0.py. 
+  But is not found by solver4.py - there must be still bug(s). Find them!
 0.3.187-20200512
 - port solvertest repo's updates
 0.3.186-20200510
