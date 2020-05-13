@@ -78,6 +78,7 @@ class TransKlauseEngine:
             if b in hi_bits:       # b already in high-pos, no transfer
                 hi_bits.remove(b)  # of bit needed - for this bit
                 allbits.remove(b)  # arget-bit consumed
+                self.name_txs.append((b, b))
             else:
                 hi = hi_bits.pop(0)
                 # self.name_txs.append((hi, b))
